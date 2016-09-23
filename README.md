@@ -3,6 +3,8 @@
 
 Create OASIS3-MCT model coupling grid configurations.
 
+This tool is a grid translator. It takes model grid definitions as netCDF files, converts to an Object/Python representation, then translates these to a format understood by the OASIS3-MCT coupler.
+
 # Description
 
 Coupling models together using the OASIS3-MCT coupler involves defining the model grids in a particular format. OASIS then uses these when regridding coupling fields. This tool can be used to create the OASIS grid definition files, called grids.nc, areas.nc, masks.nc for a collection of coupled models.
