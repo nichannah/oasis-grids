@@ -7,7 +7,7 @@ import argparse
 import netCDF4 as nc
 import numpy as np
 
-from esm_grid import mom_grid, nemo_grid, t42_grid, fv300_grid
+from esmgrids import mom_grid, nemo_grid, t42_grid, fv300_grid, oasis_grid
 
 def check_args(args):
 
@@ -60,21 +60,25 @@ def main():
     if args.model_name == 'MOM':
         model_grid = mom_grid.MomGrid(args.model_hgrid, args.model_vgrid,
                                       args.model_mask)
+        cells = ('t', 'u')
     elif args.model_name == 'NEMO':
         model_grid = nemo_grid.NemoGrid(args.model_hgrid, args.model_vgrid,
                                         args.model_mask)
+        cells = ('t', 'u', 'v')
     elif args.model_name == 'T42':
         model_grid = t42_grid.T42Grid()
+        cells = ('t')
     elif args.model_name == 'FV300':
         model_grid = fv300_grid.FV300Grid()
+        cells = ('t')
     else:
         assert False
-    
-    oasis_grid = OasisGrid(args.oasis_grid_name, model_grid)
 
-    oasis_grid.write_grids(args.grids)
-    oasis_grid.write_areas(args.areas)
-    oasis_grid.write_masks(args.masks)
+    coupling_grid = oasis_grid.OasisGrid(args.oasis_grid_name, model_grid, cells)
+
+    coupling_grid.write_grids(args.grids)
+    coupling_grid.write_areas(args.areas)
+    coupling_grid.write_masks(args.masks)
 
 
 if __name__ == "__main__":
