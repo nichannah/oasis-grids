@@ -30,7 +30,7 @@ def main():
             - T42
             - FV300
             """)
-    parser.add_argument("oasis_grid_name", help="""
+    parser.add_argument("--grid_name", default=None, help="""
         The OASIS name for the grid being created.
         """)
     parser.add_argument("--model_hgrid", default=None, help="""
@@ -50,6 +50,10 @@ def main():
                         help="The path to output OASIS masks.nc file")
 
     args = parser.parse_args()
+
+    if args.grid_name is None:
+        args.grid_name = args.model_name.lower()
+    args.model_name = args.model_name.upper()
 
     err = check_args(args)
     if err is not None:
@@ -74,7 +78,7 @@ def main():
     else:
         assert False
 
-    coupling_grid = oasis_grid.OasisGrid(args.oasis_grid_name, model_grid, cells)
+    coupling_grid = oasis_grid.OasisGrid(args.grid_name, model_grid, cells)
 
     coupling_grid.write_grids(args.grids)
     coupling_grid.write_areas(args.areas)

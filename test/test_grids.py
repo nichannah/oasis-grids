@@ -36,9 +36,10 @@ class TestOasisGrids():
         Test script makes oasis grids from mom inputs.
         """
 
-        outputs = ['areas.nc', 'grids.nc', 'masks.nc']
-        outputs = [os.path.join(output_dir, o) for o in outputs]
-        for f in outputs:
+        output_areas = os.path.join(output_dir, 'areas.nc')
+        output_grids = os.path.join(output_dir, 'grids.nc')
+        output_masks = os.path.join(output_dir, 'masks.nc')
+        for f in [output_areas, output_grids, output_masks]:
             if os.path.exists(f):
                 os.remove(f)
 
@@ -46,8 +47,10 @@ class TestOasisGrids():
         input_vgrid = os.path.join(input_dir, 'ocean_vgrid.nc')
         input_mask = os.path.join(input_dir, 'ocean_mask.nc')
 
-        args = [input_hgrid, input_vgrid, input_mask, '--output_dir',
-                output_dir]
+        args = ['--model_hgrid', input_hgrid, '--model_vgrid', input_vgrid,
+                '--model_mask', input_mask,
+                '--grids', output_grids, '--areas', output_areas,
+                '--masks', output_masks, 'MOM']
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + args
