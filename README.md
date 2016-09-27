@@ -1,5 +1,5 @@
 
-# oasis-config
+# oasis-grids
 
 Create OASIS3-MCT model coupling grid configurations.
 

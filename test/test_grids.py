@@ -7,7 +7,7 @@ import subprocess as sp
 import sh
 
 data_tarball = 'test_data.tar.gz'
-data_tarball_url = 'test_data.tar.gz'
+data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
 
 class TestOasisGrids():
 
@@ -15,7 +15,7 @@ class TestOasisGrids():
     def input_dir(self):
         if not os.path.exists('test_data'):
             if not os.path.exists(data_tarball):
-                sh.wget(data_tarball)
+                sh.wget(data_tarball_url)
             sh.tar('zxvf', data_tarball)
 
         return os.path.join(os.path.realpath('test_data'), 'input')
@@ -36,13 +36,14 @@ class TestOasisGrids():
                 os.remove(f)
 
         input_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
-        input_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        input_vgrid = os.path.join(input_dir, 'ocean_vgrid.nc')
         input_mask = os.path.join(input_dir, 'ocean_mask.nc')
 
         args = [input_hgrid, input_vgrid, input_mask, '--output_dir',
-                self.output_dir]
+                output_dir]
 
-        cmd = [os.path.join(self.test_dir, '../', 'oasisgrids.py')] + args
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + args
         ret = sp.call(cmd)
         assert(ret == 0)
 
