@@ -33,4 +33,4 @@ install:
   - conda env create -f grids.yml
   - source activate grids
 
-script: pythom -m pytest
+script: python -m pytest
