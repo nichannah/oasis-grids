@@ -13,16 +13,23 @@ class TestOasisGrids():
 
     @pytest.fixture
     def input_dir(self):
-        if not os.path.exists('test_data'):
-            if not os.path.exists(data_tarball):
-                sh.wget(data_tarball_url)
-            sh.tar('zxvf', data_tarball)
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        test_data_dir = os.path.join(test_dir, 'test_data')
+        test_data_tarball = os.path.join(test_dir, data_tarball)
 
-        return os.path.join(os.path.realpath('test_data'), 'input')
+        if not os.path.exists(test_data_dir):
+            if not os.path.exists(test_data_tarball):
+                sh.wget('-P', test_dir, data_tarball_url)
+            sh.tar('zxvf', test_data_tarball, '-C', test_dir)
+
+        return os.path.join(test_data_dir, 'input')
 
     @pytest.fixture
     def output_dir(self):
-        return os.path.join(os.path.realpath('test_data'), 'output')
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        test_data_dir = os.path.join(test_dir, 'test_data')
+
+        return os.path.join(test_data_dir, 'output')
 
     def test_mom(self, input_dir, output_dir):
         """

@@ -1,0 +1,5 @@
+name: grids
+channels: !!python/tuple
+- !!python/unicode 'defaults'
+prefix: /home/599/nah599/more_home/anaconda/envs/grids
+
