@@ -1,3 +1,3 @@
-[submodule "esm_grids"]
+[submodule "esmgrids"]
 	path = esmgrids
-	url = git@github.com:nicjhan/esm-grids
+	url = git@github.com:nicjhan/esmgrids
