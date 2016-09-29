@@ -70,7 +70,8 @@ def main():
                                         args.model_mask)
         cells = ('t', 'u', 'v')
     elif args.model_name == 'T42':
-        model_grid = t42_grid.T42Grid()
+        model_grid = t42_grid.T42Grid(128, 64, 20, args.model_mask,
+                                      description='T42 atmosphere')
         cells = ('t')
     elif args.model_name == 'FV300':
         model_grid = fv300_grid.FV300Grid()
