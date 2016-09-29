@@ -3,25 +3,9 @@ python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "2.7"
 
-# Handle git submodules yourself
-#git:
-#    submodules: false
-# Use sed to replace the SSH URL with the public URL, then initialize submodules
-#before_install:
-#    - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-#    - git submodule update --init --recursive
-
 install:
   - sudo apt-get update
-  # You may want to periodically update this, although the conda update
-  # conda line below will keep everything up-to-date.  We do this
-  # conditionally because it saves us some downloading if the version is
-  # the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
+  - wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
@@ -33,4 +17,4 @@ install:
   - conda env create -f grids.yml
   - source activate grids
 
-script: python -m pytest
+script: python -m pytest test/

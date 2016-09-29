@@ -39,6 +39,7 @@ class TestOasisGrids():
         output_areas = os.path.join(output_dir, 'areas.nc')
         output_grids = os.path.join(output_dir, 'grids.nc')
         output_masks = os.path.join(output_dir, 'masks.nc')
+        outputs = [output_areas, output_grids, output_masks]
         for f in [output_areas, output_grids, output_masks]:
             if os.path.exists(f):
                 os.remove(f)
