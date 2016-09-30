@@ -22,5 +22,37 @@ The tool takes care of step 2 in this process. ~~In addition it provides an opti
 
 # Use
 
+The tool adds one model grid definition to the files grids.nc, areas.nc, masks.nc each time it is invoked. As such it is necessary to invoke it mulitiple times, once for every model which participates in the coupling.
+
+For example to couple MOM with T42 atmosphere:
+
 ```{shell}
+$ cd test
+$ wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
+$ tar zxvf test_data.tar.gz
+$ cd test_data/input
+$ ../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc  --model_mask ocean_mask.nc \
+    --grids grids.nc --areas areas.nc --masks masks.nc
+$ ../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
+    --grids grids.nc --areas areas.nc --masks masks.nc
 ```
+
+This first invocation of oasisgrids adds the MOM grid specification to the OASIS files, the second adds the T42 grid specification.
+
+In this case no grid id/name is being provided and it will default to: lowercase model name postfixed with t, u, or v. The grid name can be given explicitly with the --grid_name option. The grid name needs to match what has been used in the OASIS namcouple file.
+
+If there are multiple model configurations then all model grid variables can be added to the same OASIS files. For example with a T42 atmosphere coupled to both MOM and NEMO in different configs:
+
+```{shell}
+$ cd test
+$ wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
+$ tar zxvf test_data.tar.gz
+$ cd test_data/input
+$ ../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc --model_mask ocean_mask.nc \
+    --grids grids.nc --areas areas.nc --masks masks.nc
+$ ../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask data_1m_potential_temperature_nomask.nc \
+    --grids grids.nc --areas areas.nc --masks masks.nc
+$ ../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
+    --grids grids.nc --areas areas.nc --masks masks.nc
+```
+
