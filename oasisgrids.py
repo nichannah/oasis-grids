@@ -14,8 +14,7 @@ def check_args(args):
     err = None
 
     if args.model_name in ['MOM', 'NEMO']:
-        if args.model_hgrid is None or \
-            args.model_vgrid is None: \
+        if args.model_hgrid is None:
             err = 'Please provide MOM or NEMO grid definition files.'
 
     return err
@@ -62,15 +61,13 @@ def main():
         return 1
 
     if args.model_name == 'MOM':
-        model_grid = mom_grid.MomGrid(args.model_hgrid, args.model_vgrid,
-                                      args.model_mask)
+        model_grid = mom_grid.MomGrid(args.model_hgrid, mask_file=args.model_mask)
         cells = ('t', 'u')
     elif args.model_name == 'NEMO':
-        model_grid = nemo_grid.NemoGrid(args.model_hgrid, args.model_vgrid,
-                                        args.model_mask)
+        model_grid = nemo_grid.NemoGrid(args.model_hgrid, mask_file=args.model_mask)
         cells = ('t', 'u', 'v')
     elif args.model_name == 'T42':
-        model_grid = t42_grid.T42Grid(128, 64, 20, args.model_mask,
+        model_grid = t42_grid.T42Grid(128, 64, 1, args.model_mask,
                                       description='T42 atmosphere')
         cells = ('t')
     elif args.model_name == 'FV300':

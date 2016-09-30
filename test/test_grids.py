@@ -5,6 +5,7 @@ import pytest
 import os
 import subprocess as sp
 import sh
+import netCDF4 as nc
 
 data_tarball = 'test_data.tar.gz'
 data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
@@ -49,11 +50,9 @@ class TestOasisGrids():
                 os.remove(f)
 
         input_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
-        input_vgrid = os.path.join(input_dir, 'ocean_vgrid.nc')
         input_mask = os.path.join(input_dir, 'ocean_mask.nc')
 
-        args = ['--model_hgrid', input_hgrid, '--model_vgrid', input_vgrid,
-                '--model_mask', input_mask,
+        args = ['--model_hgrid', input_hgrid, '--model_mask', input_mask,
                 '--grids', output_grids, '--areas', output_areas,
                 '--masks', output_masks, 'MOM']
 
@@ -88,3 +87,60 @@ class TestOasisGrids():
         for f in outputs:
             assert(os.path.exists(f))
 
+
+    def test_mom_and_t42(self, input_dir, output_grids, output_areas, output_masks):
+
+        outputs = [output_areas, output_grids, output_masks]
+        for f in [output_areas, output_grids, output_masks]:
+            if os.path.exists(f):
+                os.remove(f)
+
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
+        mom_args = ['--model_hgrid', mom_hgrid, '--model_mask', mom_mask,
+                    '--grids', output_grids, '--areas', output_areas,
+                    '--masks', output_masks, 'MOM']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mom_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
+        t42_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
+        t42_args = ['--model_mask', t42_mask,
+                    '--grids', output_grids, '--areas', output_areas,
+                    '--masks', output_masks, 'T42']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + t42_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
+        # Check that outputs and variables exist.
+        assert(os.path.exists(output_areas))
+        with nc.Dataset(output_areas) as f:
+            assert(f.variables.has_key('momt.srf'))
+            assert(f.variables.has_key('momu.srf'))
+            assert(f.variables.has_key('t42t.srf'))
+
+        assert(os.path.exists(output_grids))
+        with nc.Dataset(output_grids) as f:
+            assert(f.variables.has_key('momt.lat'))
+            assert(f.variables.has_key('momt.lon'))
+            assert(f.variables.has_key('momt.cla'))
+            assert(f.variables.has_key('momt.clo'))
+
+            assert(f.variables.has_key('momu.lat'))
+            assert(f.variables.has_key('momu.lon'))
+            assert(f.variables.has_key('momu.cla'))
+            assert(f.variables.has_key('momu.clo'))
+
+            assert(f.variables.has_key('t42t.lat'))
+            assert(f.variables.has_key('t42t.lon'))
+            assert(f.variables.has_key('t42t.cla'))
+            assert(f.variables.has_key('t42t.clo'))
+
+        assert(os.path.exists(output_masks))
+        with nc.Dataset(output_masks) as f:
+            assert(f.variables.has_key('momt.msk'))
+            assert(f.variables.has_key('momu.msk'))
+
+            assert(f.variables.has_key('t42t.msk'))
