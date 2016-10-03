@@ -56,3 +56,11 @@ $ ../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
 ```
 
+# Testing
+
+The following tests need to be finished:
+
+- NEMO and T42/FV300
+- Ocean U/V grids.
+- Tarball containing OASIS config for all model combinations, including namcouple examples.
+
