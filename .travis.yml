@@ -14,7 +14,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda env create -f grids.yml
+  - conda env create -f esmgrids/grids.yml
   - source activate grids
 
 script: python -m pytest test/
