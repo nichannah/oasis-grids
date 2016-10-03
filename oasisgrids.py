@@ -35,9 +35,6 @@ def main():
     parser.add_argument("--model_hgrid", default=None, help="""
         The model horizonatal grid definition file.
         Only needed for MOM and NEMO grids""")
-    parser.add_argument("--model_vgrid", default=None, help="""
-        The model vertical grid definition file.
-        Only needed for MOM and NEMO grids""")
     parser.add_argument("--model_mask", default=None,help="""
         The model mask file.
         Only needed for MOM and NEMO grids""")
@@ -67,7 +64,7 @@ def main():
         model_grid = nemo_grid.NemoGrid(args.model_hgrid, mask_file=args.model_mask)
         cells = ('t', 'u', 'v')
     elif args.model_name == 'T42':
-        model_grid = t42_grid.T42Grid(128, 64, 1, args.model_mask,
+        model_grid = t42_grid.T42Grid(129, 64, 1, args.model_mask,
                                       description='T42 atmosphere')
         cells = ('t')
     elif args.model_name == 'FV300':
