@@ -65,6 +65,29 @@ class TestOasisGrids():
         for f in outputs:
             assert(os.path.exists(f))
 
+    @pytest.mark.nemo
+    def test_nemo(self, input_dir, output_grids, output_areas, output_masks):
+        outputs = [output_areas, output_grids, output_masks]
+        for f in [output_areas, output_grids, output_masks]:
+            if os.path.exists(f):
+                os.remove(f)
+
+        input_hgrid = os.path.join(input_dir, 'coordinates.nc')
+
+        args = ['--model_hgrid', input_hgrid,
+                '--grids', output_grids, '--areas', output_areas,
+                '--masks', output_masks, 'NEMO']
+
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
+        # Check that outputs exist.
+        for f in outputs:
+            assert(os.path.exists(f))
+
+
     def test_t42(self, input_dir, output_grids, output_areas, output_masks):
 
         outputs = [output_areas, output_grids, output_masks]
