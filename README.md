@@ -31,9 +31,9 @@ $ cd test
 $ wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
 $ tar zxvf test_data.tar.gz
 $ cd test_data/input
-$ ../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc  --model_mask ocean_mask.nc \
+$ ../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc  --model_mask ocean_mask.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
+$ ../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
 ```
 
@@ -48,19 +48,11 @@ $ cd test
 $ wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
 $ tar zxvf test_data.tar.gz
 $ cd test_data/input
-$ ../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc --model_mask ocean_mask.nc \
+$ ../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc --model_mask ocean_mask.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask data_1m_potential_temperature_nomask.nc \
+$ ../../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask data_1m_potential_temperature_nomask.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
+$ ../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
 ```
-
-# Testing
-
-The following tests need to be finished:
-
-- NEMO and T42/FV300
-- Ocean U/V grids.
-- Tarball containing OASIS config for all model combinations, including namcouple examples.
 

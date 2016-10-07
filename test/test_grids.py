@@ -38,80 +38,7 @@ class TestOasisGrids():
     def output_masks(self):
         return os.path.join(self.output_dir, 'masks.nc')
 
-
-    def test_mom(self, input_dir, output_grids, output_areas, output_masks):
-        """
-        Test script makes oasis grids from mom inputs.
-        """
-
-        outputs = [output_areas, output_grids, output_masks]
-        for f in [output_areas, output_grids, output_masks]:
-            if os.path.exists(f):
-                os.remove(f)
-
-        input_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
-        input_mask = os.path.join(input_dir, 'ocean_mask.nc')
-
-        args = ['--model_hgrid', input_hgrid, '--model_mask', input_mask,
-                '--grids', output_grids, '--areas', output_areas,
-                '--masks', output_masks, 'MOM']
-
-        my_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + args
-        ret = sp.call(cmd)
-        assert(ret == 0)
-
-        # Check that outputs exist.
-        for f in outputs:
-            assert(os.path.exists(f))
-
-    @pytest.mark.nemo
-    def test_nemo(self, input_dir, output_grids, output_areas, output_masks):
-        outputs = [output_areas, output_grids, output_masks]
-        for f in [output_areas, output_grids, output_masks]:
-            if os.path.exists(f):
-                os.remove(f)
-
-        input_hgrid = os.path.join(input_dir, 'coordinates.nc')
-
-        args = ['--model_hgrid', input_hgrid,
-                '--grids', output_grids, '--areas', output_areas,
-                '--masks', output_masks, 'NEMO']
-
-        my_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + args
-        ret = sp.call(cmd)
-        assert(ret == 0)
-
-        # Check that outputs exist.
-        for f in outputs:
-            assert(os.path.exists(f))
-
-
-    def test_t42(self, input_dir, output_grids, output_areas, output_masks):
-
-        outputs = [output_areas, output_grids, output_masks]
-        for f in [output_areas, output_grids, output_masks]:
-            if os.path.exists(f):
-                os.remove(f)
-
-        input_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
-
-        args = ['--model_mask', input_mask,
-                '--grids', output_grids, '--areas', output_areas,
-                '--masks', output_masks, 'T42']
-
-        my_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + args
-        ret = sp.call(cmd)
-        assert(ret == 0)
-
-        # Check that outputs exist.
-        for f in outputs:
-            assert(os.path.exists(f))
-
-
-    def test_mom_and_t42(self, input_dir, output_grids, output_areas, output_masks):
+    def test_all(self, input_dir, output_grids, output_areas, output_masks):
 
         outputs = [output_areas, output_grids, output_masks]
         for f in [output_areas, output_grids, output_masks]:
@@ -129,6 +56,15 @@ class TestOasisGrids():
         ret = sp.call(cmd)
         assert(ret == 0)
 
+        nemo_hgrid = os.path.join(input_dir, 'coordinates.nc')
+        nemo_args = ['--model_hgrid', nemo_hgrid,
+                     '--grids', output_grids, '--areas', output_areas,
+                     '--masks', output_masks, 'NEMO']
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + nemo_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
         t42_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
         t42_args = ['--model_mask', t42_mask,
                     '--grids', output_grids, '--areas', output_areas,
@@ -142,6 +78,11 @@ class TestOasisGrids():
         with nc.Dataset(output_areas) as f:
             assert(f.variables.has_key('momt.srf'))
             assert(f.variables.has_key('momu.srf'))
+
+            assert(f.variables.has_key('nemt.srf'))
+            assert(f.variables.has_key('nemu.srf'))
+            assert(f.variables.has_key('nemv.srf'))
+
             assert(f.variables.has_key('t42t.srf'))
 
         assert(os.path.exists(output_grids))
@@ -156,6 +97,21 @@ class TestOasisGrids():
             assert(f.variables.has_key('momu.cla'))
             assert(f.variables.has_key('momu.clo'))
 
+            assert(f.variables.has_key('nemt.lat'))
+            assert(f.variables.has_key('nemt.lon'))
+            assert(f.variables.has_key('nemt.cla'))
+            assert(f.variables.has_key('nemt.clo'))
+
+            assert(f.variables.has_key('nemu.lat'))
+            assert(f.variables.has_key('nemu.lon'))
+            assert(f.variables.has_key('nemu.cla'))
+            assert(f.variables.has_key('nemu.clo'))
+
+            assert(f.variables.has_key('nemv.lat'))
+            assert(f.variables.has_key('nemv.lon'))
+            assert(f.variables.has_key('nemv.cla'))
+            assert(f.variables.has_key('nemv.clo'))
+
             assert(f.variables.has_key('t42t.lat'))
             assert(f.variables.has_key('t42t.lon'))
             assert(f.variables.has_key('t42t.cla'))
@@ -165,5 +121,9 @@ class TestOasisGrids():
         with nc.Dataset(output_masks) as f:
             assert(f.variables.has_key('momt.msk'))
             assert(f.variables.has_key('momu.msk'))
+
+            assert(f.variables.has_key('nemt.msk'))
+            assert(f.variables.has_key('nemu.msk'))
+            assert(f.variables.has_key('nemv.msk'))
 
             assert(f.variables.has_key('t42t.msk'))
