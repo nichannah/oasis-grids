@@ -1,5 +1,6 @@
 test/test_data
 test/test_data.tar.gz
+test/example_output*
 *.swp
 
 # Byte-compiled / optimized / DLL files
