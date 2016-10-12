@@ -14,8 +14,18 @@ def check_args(args):
     err = None
 
     if args.model_name in ['MOM', 'NEMO']:
-        if args.model_hgrid is None:
-            err = 'Please provide MOM or NEMO grid definition files.'
+        if args.model_hgrid is None or args.model_mask is None:
+            err = 'Please provide MOM or NEMO grid definition and mask files.'
+
+    return err
+
+def check_file_exist(files):
+
+    err = None
+
+    for f in files:
+        if f is not None and not os.path.exists(f):
+            err = "Can't find input file {}.".format(f)
 
     return err
 
@@ -35,7 +45,7 @@ def main():
     parser.add_argument("--model_hgrid", default=None, help="""
         The model horizonatal grid definition file.
         Only needed for MOM and NEMO grids""")
-    parser.add_argument("--model_mask", default=None,help="""
+    parser.add_argument("--model_mask", default=None, help="""
         The model mask file.
         Only needed for MOM and NEMO grids""")
     parser.add_argument("--grids", default="grids.nc",
@@ -57,6 +67,12 @@ def main():
         parser.print_help()
         return 1
 
+    err = check_file_exist([args.model_hgrid, args.model_mask])
+    if err is not None:
+        print(err, file=sys.stderr)
+        parser.print_help()
+        return 1
+
     if args.model_name == 'MOM':
         model_grid = mom_grid.MomGrid(args.model_hgrid, mask_file=args.model_mask)
         cells = ('t', 'u')
@@ -68,7 +84,8 @@ def main():
                                       description='T42 atmosphere')
         cells = ('t')
     elif args.model_name == 'FV300':
-        model_grid = fv300_grid.FV300Grid()
+        model_grid = fv300_grid.FV300Grid(129, 64, 1, args.model_mask,
+                                          description='FV200 atmosphere')
         cells = ('t')
     else:
         assert False

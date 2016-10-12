@@ -5,10 +5,90 @@ import pytest
 import os
 import subprocess as sp
 import sh
+import numpy as np
 import netCDF4 as nc
 
 data_tarball = 'test_data.tar.gz'
 data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
+
+def check_vars_exist(areas, grids, masks):
+
+    # Check that outputs and variables exist.
+    assert(os.path.exists(areas))
+    with nc.Dataset(areas) as f:
+        assert(f.variables.has_key('momt.srf'))
+        assert(f.variables.has_key('momu.srf'))
+
+        assert(f.variables.has_key('nemt.srf'))
+        assert(f.variables.has_key('nemu.srf'))
+        assert(f.variables.has_key('nemv.srf'))
+
+        assert(f.variables.has_key('t42t.srf'))
+
+        assert(f.variables.has_key('fv3t.srf'))
+
+    assert(os.path.exists(grids))
+    with nc.Dataset(grids) as f:
+        assert(f.variables.has_key('momt.lat'))
+        assert(f.variables.has_key('momt.lon'))
+        assert(f.variables.has_key('momt.cla'))
+        assert(f.variables.has_key('momt.clo'))
+
+        assert(f.variables.has_key('momu.lat'))
+        assert(f.variables.has_key('momu.lon'))
+        assert(f.variables.has_key('momu.cla'))
+        assert(f.variables.has_key('momu.clo'))
+
+        assert(f.variables.has_key('nemt.lat'))
+        assert(f.variables.has_key('nemt.lon'))
+        assert(f.variables.has_key('nemt.cla'))
+        assert(f.variables.has_key('nemt.clo'))
+
+        assert(f.variables.has_key('nemu.lat'))
+        assert(f.variables.has_key('nemu.lon'))
+        assert(f.variables.has_key('nemu.cla'))
+        assert(f.variables.has_key('nemu.clo'))
+
+        assert(f.variables.has_key('nemv.lat'))
+        assert(f.variables.has_key('nemv.lon'))
+        assert(f.variables.has_key('nemv.cla'))
+        assert(f.variables.has_key('nemv.clo'))
+
+        assert(f.variables.has_key('t42t.lat'))
+        assert(f.variables.has_key('t42t.lon'))
+        assert(f.variables.has_key('t42t.cla'))
+        assert(f.variables.has_key('t42t.clo'))
+
+        assert(f.variables.has_key('fv3t.lat'))
+        assert(f.variables.has_key('fv3t.lon'))
+        assert(f.variables.has_key('fv3t.cla'))
+        assert(f.variables.has_key('fv3t.clo'))
+
+    assert(os.path.exists(masks))
+    with nc.Dataset(masks) as f:
+        assert(f.variables.has_key('momt.msk'))
+        assert(f.variables.has_key('momu.msk'))
+
+        assert(f.variables.has_key('nemt.msk'))
+        assert(f.variables.has_key('nemu.msk'))
+        assert(f.variables.has_key('nemv.msk'))
+
+        assert(f.variables.has_key('t42t.msk'))
+
+        assert(f.variables.has_key('fv3t.msk'))
+
+
+def check_var_values(areas, grids, masks):
+
+    assert(os.path.exists(masks))
+    with nc.Dataset(masks) as f:
+        keys = ['momt.msk', 'momu.msk', 'nemt.msk', 'nemu.msk', 'nemv.msk', 't42t.msk', 'fv3t.msk']
+        for k in keys:
+            mask = f.variables[k][:]
+            # Don't want it to be all masked.
+            assert np.sum(mask) < mask.shape[0] * mask.shape[1]
+
+
 
 class TestOasisGrids():
     test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -57,7 +137,8 @@ class TestOasisGrids():
         assert(ret == 0)
 
         nemo_hgrid = os.path.join(input_dir, 'coordinates.nc')
-        nemo_args = ['--model_hgrid', nemo_hgrid,
+        nemo_mask = os.path.join(input_dir, 'mesh_mask.nc')
+        nemo_args = ['--model_hgrid', nemo_hgrid, '--model_mask', nemo_mask,
                      '--grids', output_grids, '--areas', output_areas,
                      '--masks', output_masks, 'NEMO']
         my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -73,57 +154,14 @@ class TestOasisGrids():
         ret = sp.call(cmd)
         assert(ret == 0)
 
-        # Check that outputs and variables exist.
-        assert(os.path.exists(output_areas))
-        with nc.Dataset(output_areas) as f:
-            assert(f.variables.has_key('momt.srf'))
-            assert(f.variables.has_key('momu.srf'))
+        fv300_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
+        fv300_args = ['--model_mask', fv300_mask,
+                    '--grids', output_grids, '--areas', output_areas,
+                    '--masks', output_masks, 'FV300']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + fv300_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
 
-            assert(f.variables.has_key('nemt.srf'))
-            assert(f.variables.has_key('nemu.srf'))
-            assert(f.variables.has_key('nemv.srf'))
+        check_vars_exist(output_areas, output_grids, output_masks)
+        check_var_values(output_areas, output_grids, output_masks)
 
-            assert(f.variables.has_key('t42t.srf'))
-
-        assert(os.path.exists(output_grids))
-        with nc.Dataset(output_grids) as f:
-            assert(f.variables.has_key('momt.lat'))
-            assert(f.variables.has_key('momt.lon'))
-            assert(f.variables.has_key('momt.cla'))
-            assert(f.variables.has_key('momt.clo'))
-
-            assert(f.variables.has_key('momu.lat'))
-            assert(f.variables.has_key('momu.lon'))
-            assert(f.variables.has_key('momu.cla'))
-            assert(f.variables.has_key('momu.clo'))
-
-            assert(f.variables.has_key('nemt.lat'))
-            assert(f.variables.has_key('nemt.lon'))
-            assert(f.variables.has_key('nemt.cla'))
-            assert(f.variables.has_key('nemt.clo'))
-
-            assert(f.variables.has_key('nemu.lat'))
-            assert(f.variables.has_key('nemu.lon'))
-            assert(f.variables.has_key('nemu.cla'))
-            assert(f.variables.has_key('nemu.clo'))
-
-            assert(f.variables.has_key('nemv.lat'))
-            assert(f.variables.has_key('nemv.lon'))
-            assert(f.variables.has_key('nemv.cla'))
-            assert(f.variables.has_key('nemv.clo'))
-
-            assert(f.variables.has_key('t42t.lat'))
-            assert(f.variables.has_key('t42t.lon'))
-            assert(f.variables.has_key('t42t.cla'))
-            assert(f.variables.has_key('t42t.clo'))
-
-        assert(os.path.exists(output_masks))
-        with nc.Dataset(output_masks) as f:
-            assert(f.variables.has_key('momt.msk'))
-            assert(f.variables.has_key('momu.msk'))
-
-            assert(f.variables.has_key('nemt.msk'))
-            assert(f.variables.has_key('nemu.msk'))
-            assert(f.variables.has_key('nemv.msk'))
-
-            assert(f.variables.has_key('t42t.msk'))

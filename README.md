@@ -50,9 +50,13 @@ $ tar zxvf test_data.tar.gz
 $ cd test_data/input
 $ ../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc --model_mask ocean_mask.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask data_1m_potential_temperature_nomask.nc \
+$ ../../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask mesh_mask.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
 $ ../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
     --grids grids.nc --areas areas.nc --masks masks.nc
+$ ../../../oasisgrids.py FV300 --model_mask lsm.20040101000000.nc \
+    --grids grids.nc --areas areas.nc --masks masks.nc
 ```
+
+This will result in grids.nc, areas.nc, masks.nc files that contain grid definitions for all of the above models. OASIS will use this to create the remapping weights files depending on the contents of the namcouple file.
 
