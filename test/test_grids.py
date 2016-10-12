@@ -118,6 +118,56 @@ class TestOasisGrids():
     def output_masks(self):
         return os.path.join(self.output_dir, 'masks.nc')
 
+    def test_double_write(self, input_dir, output_grids, output_areas, output_masks):
+
+        outputs = [output_areas, output_grids, output_masks]
+        for f in [output_areas, output_grids, output_masks]:
+            if os.path.exists(f):
+                os.remove(f)
+
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
+        mom_args = ['--model_hgrid', mom_hgrid, '--model_mask', mom_mask,
+                    '--grids', output_grids, '--areas', output_areas,
+                    '--masks', output_masks, 'MOM']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mom_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
+        with nc.Dataset(output_grids) as fg:
+            lon = fg.variables['momt.lon'][:]
+            lat = fg.variables['momt.lat'][:]
+            cla = fg.variables['momt.cla'][:]
+            clo = fg.variables['momt.clo'][:]
+
+        with nc.Dataset(output_areas) as fa:
+            tsrf = fa.variables['momt.srf'][:]
+            usrf = fa.variables['momu.srf'][:]
+
+        with nc.Dataset(output_masks) as fm:
+            tmsk = fm.variables['momt.msk'][:]
+            umsk = fm.variables['momu.msk'][:]
+
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mom_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
+        with nc.Dataset(output_grids) as fg:
+            assert np.array_equal(fg.variables['momt.lon'][:], lon[:])
+            assert np.array_equal(fg.variables['momt.lat'][:], lat[:])
+            assert np.array_equal(fg.variables['momt.clo'][:], clo[:])
+            assert np.array_equal(fg.variables['momt.cla'][:], cla[:])
+
+        with nc.Dataset(output_areas) as fa:
+            assert np.array_equal(fa.variables['momt.srf'][:], tsrf[:])
+            assert np.array_equal(fa.variables['momu.srf'][:], usrf[:])
+
+        with nc.Dataset(output_masks) as fm:
+            assert np.array_equal(fm.variables['momt.msk'][:], tmsk[:])
+            assert np.array_equal(fm.variables['momu.msk'][:], umsk[:])
+
     def test_all(self, input_dir, output_grids, output_areas, output_masks):
 
         outputs = [output_areas, output_grids, output_masks]
