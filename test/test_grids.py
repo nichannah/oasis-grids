@@ -11,6 +11,8 @@ import netCDF4 as nc
 data_tarball = 'test_data.tar.gz'
 data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
 
+EARTH_AREA = 510072000e6
+
 def check_vars_exist(areas, grids, masks):
 
     # Check that outputs and variables exist.
@@ -96,15 +98,24 @@ def check_vars_exist(areas, grids, masks):
 
 def check_var_values(areas, grids, masks):
 
+    # Check that masks is the right way around.
     assert(os.path.exists(masks))
     with nc.Dataset(masks) as f:
-        keys = ['momt.msk', 'momu.msk', 'nemt.msk', 'nemu.msk', 'nemv.msk',
-                'spet.msk', 'fvot.msk']
+        keys = ['momt.msk', 'momu.msk', 'mo1t.msk', 'mo1u.msk', 'nemt.msk', 
+                'nemu.msk', 'nemv.msk', 'spet.msk', 'fvot.msk']
         for k in keys:
             mask = f.variables[k][:]
             # Don't want it to be all masked.
             assert np.sum(mask) < mask.shape[0] * mask.shape[1]
 
+    # Check that the areas are roughly correct.
+    assert(os.path.exists(areas))
+    with nc.Dataset(areas) as f:
+        keys = ['momt.srf', 'momu.srf', 'mo1t.srf', 'mo1u.srf', 'nemt.srf', 
+                'nemu.srf', 'nemv.srf', 'spet.srf', 'fvot.srf']
+        for k in keys:
+            area = f.variables[k][:]
+            assert abs(1 - np.sum(area) / EARTH_AREA) < 5e-2
 
 class TestOasisGrids():
     test_dir = os.path.dirname(os.path.realpath(__file__))
