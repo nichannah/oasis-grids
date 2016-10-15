@@ -23,9 +23,9 @@ def check_vars_exist(areas, grids, masks):
         assert(f.variables.has_key('nemu.srf'))
         assert(f.variables.has_key('nemv.srf'))
 
-        assert(f.variables.has_key('t42t.srf'))
+        assert(f.variables.has_key('spet.srf'))
 
-        assert(f.variables.has_key('fv3t.srf'))
+        assert(f.variables.has_key('fvot.srf'))
 
     assert(os.path.exists(grids))
     with nc.Dataset(grids) as f:
@@ -54,15 +54,15 @@ def check_vars_exist(areas, grids, masks):
         assert(f.variables.has_key('nemv.cla'))
         assert(f.variables.has_key('nemv.clo'))
 
-        assert(f.variables.has_key('t42t.lat'))
-        assert(f.variables.has_key('t42t.lon'))
-        assert(f.variables.has_key('t42t.cla'))
-        assert(f.variables.has_key('t42t.clo'))
+        assert(f.variables.has_key('spet.lat'))
+        assert(f.variables.has_key('spet.lon'))
+        assert(f.variables.has_key('spet.cla'))
+        assert(f.variables.has_key('spet.clo'))
 
-        assert(f.variables.has_key('fv3t.lat'))
-        assert(f.variables.has_key('fv3t.lon'))
-        assert(f.variables.has_key('fv3t.cla'))
-        assert(f.variables.has_key('fv3t.clo'))
+        assert(f.variables.has_key('fvot.lat'))
+        assert(f.variables.has_key('fvot.lon'))
+        assert(f.variables.has_key('fvot.cla'))
+        assert(f.variables.has_key('fvot.clo'))
 
     assert(os.path.exists(masks))
     with nc.Dataset(masks) as f:
@@ -73,21 +73,21 @@ def check_vars_exist(areas, grids, masks):
         assert(f.variables.has_key('nemu.msk'))
         assert(f.variables.has_key('nemv.msk'))
 
-        assert(f.variables.has_key('t42t.msk'))
+        assert(f.variables.has_key('spet.msk'))
 
-        assert(f.variables.has_key('fv3t.msk'))
+        assert(f.variables.has_key('fvot.msk'))
 
 
 def check_var_values(areas, grids, masks):
 
     assert(os.path.exists(masks))
     with nc.Dataset(masks) as f:
-        keys = ['momt.msk', 'momu.msk', 'nemt.msk', 'nemu.msk', 'nemv.msk', 't42t.msk', 'fv3t.msk']
+        keys = ['momt.msk', 'momu.msk', 'nemt.msk', 'nemu.msk', 'nemv.msk',
+                'spet.msk', 'fvot.msk']
         for k in keys:
             mask = f.variables[k][:]
             # Don't want it to be all masked.
             assert np.sum(mask) < mask.shape[0] * mask.shape[1]
-
 
 
 class TestOasisGrids():
@@ -196,19 +196,19 @@ class TestOasisGrids():
         ret = sp.call(cmd)
         assert(ret == 0)
 
-        t42_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
-        t42_args = ['--model_mask', t42_mask,
+        spe_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
+        spe_args = ['--model_mask', spe_mask,
                     '--grids', output_grids, '--areas', output_areas,
-                    '--masks', output_masks, 'T42']
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + t42_args
+                    '--masks', output_masks, 'SPE']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + spe_args
         ret = sp.call(cmd)
         assert(ret == 0)
 
-        fv300_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
-        fv300_args = ['--model_mask', fv300_mask,
+        fvo_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
+        fvo_args = ['--model_mask', fvo_mask,
                     '--grids', output_grids, '--areas', output_areas,
-                    '--masks', output_masks, 'FV300']
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + fv300_args
+                    '--masks', output_masks, 'FVO']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + fvo_args
         ret = sp.call(cmd)
         assert(ret == 0)
 
