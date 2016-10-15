@@ -35,9 +35,10 @@ def main():
     parser.add_argument("model_name", help="""
         The the model name. Supported names are:
             - MOM
+            - 1MOM  # 1 degree MOM
             - NEMO
-            - T42
-            - FV300
+            - SP
+            - FV
             """)
     parser.add_argument("--grid_name", default=None, help="""
         The OASIS name for the grid being created.
@@ -48,6 +49,12 @@ def main():
     parser.add_argument("--model_mask", default=None, help="""
         The model mask file.
         Only needed for MOM and NEMO grids""")
+    parser.add_argument("--model_cols", type=int, default=None, help="""
+        Number of model columns
+        Only needed for atmospheric grids""") 
+    parser.add_argument("--model_rows", type=int, default=None, help="""
+        Number of model rows
+        Only needed for atmospheric grids""")         
     parser.add_argument("--grids", default="grids.nc",
                         help="The path to output OASIS grids.nc file")
     parser.add_argument("--areas", default="areas.nc",
@@ -76,16 +83,23 @@ def main():
     if args.model_name == 'MOM':
         model_grid = mom_grid.MomGrid(args.model_hgrid, mask_file=args.model_mask)
         cells = ('t', 'u')
+    if args.model_name == '1MOM':
+        model_grid = mom1_grid.Mom1Grid(args.model_hgrid, mask_file=args.model_mask)
+        cells = ('t', 'u')
     elif args.model_name == 'NEMO':
         model_grid = nemo_grid.NemoGrid(args.model_hgrid, mask_file=args.model_mask)
         cells = ('t', 'u', 'v')
-    elif args.model_name == 'T42':
-        model_grid = t42_grid.T42Grid(129, 64, 1, args.model_mask,
-                                      description='T42 atmosphere')
+    elif args.model_name == 'SP':
+        num_lons = args.model_cols
+        num_lats = args.model_rows
+        model_grid = t42_grid.T42Grid(num_lons, num_lats, 1, args.model_mask,
+                                      description='Spectral')
         cells = ('t')
-    elif args.model_name == 'FV300':
-        model_grid = fv300_grid.FV300Grid(129, 64, 1, args.model_mask,
-                                          description='FV200 atmosphere')
+    elif args.model_name == 'FV':
+        num_lons = args.model_cols
+        num_lats = args.model_rows
+        model_grid = fv300_grid.FV300Grid(num_lons, num_lats, 1, args.model_mask,
+                                          description='FV')
         cells = ('t')
     else:
         assert False
