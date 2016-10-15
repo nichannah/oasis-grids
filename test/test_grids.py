@@ -19,6 +19,9 @@ def check_vars_exist(areas, grids, masks):
         assert(f.variables.has_key('momt.srf'))
         assert(f.variables.has_key('momu.srf'))
 
+        assert(f.variables.has_key('mo1t.srf'))
+        assert(f.variables.has_key('mo1u.srf'))
+
         assert(f.variables.has_key('nemt.srf'))
         assert(f.variables.has_key('nemu.srf'))
         assert(f.variables.has_key('nemv.srf'))
@@ -38,6 +41,16 @@ def check_vars_exist(areas, grids, masks):
         assert(f.variables.has_key('momu.lon'))
         assert(f.variables.has_key('momu.cla'))
         assert(f.variables.has_key('momu.clo'))
+
+        assert(f.variables.has_key('mo1t.lat'))
+        assert(f.variables.has_key('mo1t.lon'))
+        assert(f.variables.has_key('mo1t.cla'))
+        assert(f.variables.has_key('mo1t.clo'))
+
+        assert(f.variables.has_key('mo1u.lat'))
+        assert(f.variables.has_key('mo1u.lon'))
+        assert(f.variables.has_key('mo1u.cla'))
+        assert(f.variables.has_key('mo1u.clo'))
 
         assert(f.variables.has_key('nemt.lat'))
         assert(f.variables.has_key('nemt.lon'))
@@ -68,6 +81,9 @@ def check_vars_exist(areas, grids, masks):
     with nc.Dataset(masks) as f:
         assert(f.variables.has_key('momt.msk'))
         assert(f.variables.has_key('momu.msk'))
+
+        assert(f.variables.has_key('mo1t.msk'))
+        assert(f.variables.has_key('mo1u.msk'))
 
         assert(f.variables.has_key('nemt.msk'))
         assert(f.variables.has_key('nemu.msk'))
@@ -183,6 +199,16 @@ class TestOasisGrids():
                     '--grids', output_grids, '--areas', output_areas,
                     '--masks', output_masks, 'MOM']
         cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mom_args
+        ret = sp.call(cmd)
+        assert(ret == 0)
+
+        # MOM 1 deg grid
+        mo1_hgrid = os.path.join(input_dir, 'grid_spec.nc')
+        mo1_mask = os.path.join(input_dir, 'grid_spec.nc')
+        mo1_args = ['--model_hgrid', mo1_hgrid, '--model_mask', mo1_mask,
+                    '--grids', output_grids, '--areas', output_areas,
+                    '--masks', output_masks, 'MOM1']
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mo1_args
         ret = sp.call(cmd)
         assert(ret == 0)
 
