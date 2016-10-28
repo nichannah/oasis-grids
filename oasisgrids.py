@@ -50,7 +50,7 @@ def main():
     parser.add_argument("--model_mask", default=None, help="""
         The model mask file.
         Only needed for MOM and NEMO grids""")
-    parser.add_argument("--model_cols", type=int, default=129, help="""
+    parser.add_argument("--model_cols", type=int, default=128, help="""
         Number of model columns
         Only needed for atmospheric grids""")
     parser.add_argument("--model_rows", type=int, default=64, help="""

@@ -11,8 +11,6 @@ import netCDF4 as nc
 data_tarball = 'test_data.tar.gz'
 data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
 
-EARTH_AREA = 510072000e6
-
 def check_vars_exist(areas, grids, masks):
 
     # Check that outputs and variables exist.
@@ -109,6 +107,7 @@ def check_var_values(areas, grids, masks):
             assert np.sum(mask) < mask.shape[0] * mask.shape[1]
 
     # Check that the areas are roughly correct.
+    EARTH_AREA = 510072000e6
     assert(os.path.exists(areas))
     with nc.Dataset(areas) as f:
         keys = ['momt.srf', 'momu.srf', 'mo1t.srf', 'mo1u.srf', 'nemt.srf', 
