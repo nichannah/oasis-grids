@@ -232,9 +232,8 @@ class TestOasisGrids():
         ret = sp.call(cmd)
         assert(ret == 0)
 
-        spe_mask = os.path.join(input_dir, 'lsm.20040101000000.nc')
-        spe_args = ['--model_mask', spe_mask,
-                    '--grids', output_grids, '--areas', output_areas,
+        # Don't include mask
+        spe_args = ['--grids', output_grids, '--areas', output_areas,
                     '--masks', output_masks, 'SPE']
         cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + spe_args
         ret = sp.call(cmd)
