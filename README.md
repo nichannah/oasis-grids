@@ -1,11 +1,11 @@
 
+[![Build Status](https://travis-ci.org/nicjhan/oasis-grids.svg?branch=master)](https://travis-ci.org/nicjhan/oasis-grids)
+
 # oasis-grids
 
 Create OASIS3-MCT model coupling grid configurations.
 
 This tool is a grid translator. It takes model grid definitions as netCDF files, converts to an Object/Python representation, then translates these to a format understood by the OASIS3-MCT coupler.
-
-Build status [![Build Status](https://travis-ci.org/nicjhan/oasis-grids.svg?branch=master)](https://travis-ci.org/nicjhan/oasis-grids)
 
 # Description
 
@@ -27,14 +27,14 @@ The tool adds one model grid definition to the files grids.nc, areas.nc, masks.n
 For example to couple MOM with T42 atmosphere:
 
 ```{shell}
-$ cd test
-$ wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
-$ tar zxvf test_data.tar.gz
-$ cd test_data/input
-$ ../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc  --model_mask ocean_mask.nc \
-    --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
-    --grids grids.nc --areas areas.nc --masks masks.nc
+cd test
+wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
+tar zxvf test_data.tar.gz
+cd test_data/input
+../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc  --model_mask ocean_mask.nc \
+  --grids grids.nc --areas areas.nc --masks masks.nc
+../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
+  --grids grids.nc --areas areas.nc --masks masks.nc
 ```
 
 This first invocation of oasisgrids adds the MOM grid specification to the OASIS files, the second adds the T42 grid specification.
@@ -44,18 +44,18 @@ In this case no grid id/name is being provided and it will default to: lowercase
 If there are multiple model configurations then all model grid variables can be added to the same OASIS files. For example with a T42 atmosphere coupled to both MOM and NEMO in different configs:
 
 ```{shell}
-$ cd test
-$ wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
-$ tar zxvf test_data.tar.gz
-$ cd test_data/input
-$ ../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc --model_mask ocean_mask.nc \
-    --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask mesh_mask.nc \
-    --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
-    --grids grids.nc --areas areas.nc --masks masks.nc
-$ ../../../oasisgrids.py FV300 --model_mask lsm.20040101000000.nc \
-    --grids grids.nc --areas areas.nc --masks masks.nc
+cd test
+wget http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz
+tar zxvf test_data.tar.gz
+cd test_data/input
+../../../oasisgrids.py MOM --model_hgrid ocean_hgrid.nc --model_mask ocean_mask.nc \
+  --grids grids.nc --areas areas.nc --masks masks.nc
+../../../oasisgrids.py NEMO --model_hgrid coordinates.nc --model_mask mesh_mask.nc \
+  --grids grids.nc --areas areas.nc --masks masks.nc
+../../../oasisgrids.py T42 --model_mask lsm.20040101000000.nc \
+  --grids grids.nc --areas areas.nc --masks masks.nc
+../../../oasisgrids.py FV300 --model_mask lsm.20040101000000.nc \
+  --grids grids.nc --areas areas.nc --masks masks.nc
 ```
 
 This will result in grids.nc, areas.nc, masks.nc files that contain grid definitions for all of the above models. OASIS will use this to create the remapping weights files depending on the contents of the namcouple file.
