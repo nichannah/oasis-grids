@@ -20,142 +20,142 @@ def check_first_combo_vars_exist(areas, grids, masks):
     # Check that outputs and variables exist.
     assert(os.path.exists(areas))
     with nc.Dataset(areas) as f:
-        assert(f.variables.has_key('momt.srf'))
-        assert(f.variables.has_key('momu.srf'))
+        assert('momt.srf' in f.variables)
+        assert('momu.srf' in f.variables)
 
-        assert(f.variables.has_key('mo1t.srf'))
-        assert(f.variables.has_key('mo1u.srf'))
+        assert('mo1t.srf' in f.variables)
+        assert('mo1u.srf' in f.variables)
 
-        assert(f.variables.has_key('nemt.srf'))
-        assert(f.variables.has_key('nemu.srf'))
-        assert(f.variables.has_key('nemv.srf'))
+        assert('nemt.srf' in f.variables)
+        assert('nemu.srf' in f.variables)
+        assert('nemv.srf' in f.variables)
 
-        assert(f.variables.has_key('spet.srf'))
+        assert('spet.srf' in f.variables)
 
-        assert(f.variables.has_key('fvot.srf'))
+        assert('fvot.srf' in f.variables)
 
     assert(os.path.exists(grids))
     with nc.Dataset(grids) as f:
-        assert(f.variables.has_key('momt.lat'))
-        assert(f.variables.has_key('momt.lon'))
-        assert(f.variables.has_key('momt.cla'))
-        assert(f.variables.has_key('momt.clo'))
+        assert('momt.lat' in f.variables)
+        assert('momt.lon' in f.variables)
+        assert('momt.cla' in f.variables)
+        assert('momt.clo' in f.variables)
 
-        assert(f.variables.has_key('momu.lat'))
-        assert(f.variables.has_key('momu.lon'))
-        assert(f.variables.has_key('momu.cla'))
-        assert(f.variables.has_key('momu.clo'))
+        assert('momu.lat' in f.variables)
+        assert('momu.lon' in f.variables)
+        assert('momu.cla' in f.variables)
+        assert('momu.clo' in f.variables)
 
-        assert(f.variables.has_key('mo1t.lat'))
-        assert(f.variables.has_key('mo1t.lon'))
-        assert(f.variables.has_key('mo1t.cla'))
-        assert(f.variables.has_key('mo1t.clo'))
+        assert('mo1t.lat' in f.variables)
+        assert('mo1t.lon' in f.variables)
+        assert('mo1t.cla' in f.variables)
+        assert('mo1t.clo' in f.variables)
 
-        assert(f.variables.has_key('mo1u.lat'))
-        assert(f.variables.has_key('mo1u.lon'))
-        assert(f.variables.has_key('mo1u.cla'))
-        assert(f.variables.has_key('mo1u.clo'))
+        assert('mo1u.lat' in f.variables)
+        assert('mo1u.lon' in f.variables)
+        assert('mo1u.cla' in f.variables)
+        assert('mo1u.clo' in f.variables)
 
-        assert(f.variables.has_key('nemt.lat'))
-        assert(f.variables.has_key('nemt.lon'))
-        assert(f.variables.has_key('nemt.cla'))
-        assert(f.variables.has_key('nemt.clo'))
+        assert('nemt.lat' in f.variables)
+        assert('nemt.lon' in f.variables)
+        assert('nemt.cla' in f.variables)
+        assert('nemt.clo' in f.variables)
 
-        assert(f.variables.has_key('nemu.lat'))
-        assert(f.variables.has_key('nemu.lon'))
-        assert(f.variables.has_key('nemu.cla'))
-        assert(f.variables.has_key('nemu.clo'))
+        assert('nemu.lat' in f.variables)
+        assert('nemu.lon' in f.variables)
+        assert('nemu.cla' in f.variables)
+        assert('nemu.clo' in f.variables)
 
-        assert(f.variables.has_key('nemv.lat'))
-        assert(f.variables.has_key('nemv.lon'))
-        assert(f.variables.has_key('nemv.cla'))
-        assert(f.variables.has_key('nemv.clo'))
+        assert('nemv.lat' in f.variables)
+        assert('nemv.lon' in f.variables)
+        assert('nemv.cla' in f.variables)
+        assert('nemv.clo' in f.variables)
 
-        assert(f.variables.has_key('spet.lat'))
-        assert(f.variables.has_key('spet.lon'))
-        assert(f.variables.has_key('spet.cla'))
-        assert(f.variables.has_key('spet.clo'))
+        assert('spet.lat' in f.variables)
+        assert('spet.lon' in f.variables)
+        assert('spet.cla' in f.variables)
+        assert('spet.clo' in f.variables)
 
-        assert(f.variables.has_key('fvot.lat'))
-        assert(f.variables.has_key('fvot.lon'))
-        assert(f.variables.has_key('fvot.cla'))
-        assert(f.variables.has_key('fvot.clo'))
+        assert('fvot.lat' in f.variables)
+        assert('fvot.lon' in f.variables)
+        assert('fvot.cla' in f.variables)
+        assert('fvot.clo' in f.variables)
 
     assert(os.path.exists(masks))
     with nc.Dataset(masks) as f:
-        assert(f.variables.has_key('momt.msk'))
-        assert(f.variables.has_key('momu.msk'))
+        assert('momt.msk' in f.variables)
+        assert('momu.msk' in f.variables)
 
-        assert(f.variables.has_key('mo1t.msk'))
-        assert(f.variables.has_key('mo1u.msk'))
+        assert('mo1t.msk' in f.variables)
+        assert('mo1u.msk' in f.variables)
 
-        assert(f.variables.has_key('nemt.msk'))
-        assert(f.variables.has_key('nemu.msk'))
-        assert(f.variables.has_key('nemv.msk'))
+        assert('nemt.msk' in f.variables)
+        assert('nemu.msk' in f.variables)
+        assert('nemv.msk' in f.variables)
 
-        assert(f.variables.has_key('spet.msk'))
+        assert('spet.msk' in f.variables)
 
-        assert(f.variables.has_key('fvot.msk'))
+        assert('fvot.msk' in f.variables)
 
 
-def check_accessom_tenth_vars_exist(output_areas, output_grids, output_masks)
+def check_accessom_tenth_vars_exist(areas, grids, masks):
 
     # Check that outputs and variables exist.
     assert(os.path.exists(areas))
     with nc.Dataset(areas) as f:
-        assert(f.variables.has_key('momt.srf'))
-        assert(f.variables.has_key('momu.srf'))
+        assert('momt.srf' in f.variables)
+        assert('momu.srf' in f.variables)
 
-        assert(f.variables.has_key('cict.srf'))
-        assert(f.variables.has_key('cicu.srf'))
+        assert('cict.srf' in f.variables)
+        assert('cicu.srf' in f.variables)
 
-        assert(f.variables.has_key('cort.srf'))
+        assert('cort.srf' in f.variables)
 
-        assert(f.variables.has_key('jrat.srf'))
+        assert('jrat.srf' in f.variables)
 
     assert(os.path.exists(grids))
     with nc.Dataset(grids) as f:
-        assert(f.variables.has_key('momt.lat'))
-        assert(f.variables.has_key('momt.lon'))
-        assert(f.variables.has_key('momt.cla'))
-        assert(f.variables.has_key('momt.clo'))
+        assert('momt.lat' in f.variables)
+        assert('momt.lon' in f.variables)
+        assert('momt.cla' in f.variables)
+        assert('momt.clo' in f.variables)
 
-        assert(f.variables.has_key('momu.lat'))
-        assert(f.variables.has_key('momu.lon'))
-        assert(f.variables.has_key('momu.cla'))
-        assert(f.variables.has_key('momu.clo'))
+        assert('momu.lat' in f.variables)
+        assert('momu.lon' in f.variables)
+        assert('momu.cla' in f.variables)
+        assert('momu.clo' in f.variables)
 
-        assert(f.variables.has_key('cict.lat'))
-        assert(f.variables.has_key('cict.lon'))
-        assert(f.variables.has_key('cict.cla'))
-        assert(f.variables.has_key('cict.clo'))
+        assert('cict.lat' in f.variables)
+        assert('cict.lon' in f.variables)
+        assert('cict.cla' in f.variables)
+        assert('cict.clo' in f.variables)
 
-        assert(f.variables.has_key('cicu.lat'))
-        assert(f.variables.has_key('cicu.lon'))
-        assert(f.variables.has_key('cicu.cla'))
-        assert(f.variables.has_key('cicu.clo'))
+        assert('cicu.lat' in f.variables)
+        assert('cicu.lon' in f.variables)
+        assert('cicu.cla' in f.variables)
+        assert('cicu.clo' in f.variables)
 
-        assert(f.variables.has_key('cort.lat'))
-        assert(f.variables.has_key('cort.lon'))
-        assert(f.variables.has_key('cort.cla'))
-        assert(f.variables.has_key('cort.clo'))
+        assert('cort.lat' in f.variables)
+        assert('cort.lon' in f.variables)
+        assert('cort.cla' in f.variables)
+        assert('cort.clo' in f.variables)
 
-        assert(f.variables.has_key('jrat.lat'))
-        assert(f.variables.has_key('jrat.lon'))
-        assert(f.variables.has_key('jrat.cla'))
-        assert(f.variables.has_key('jrat.clo'))
+        assert('jrat.lat' in f.variables)
+        assert('jrat.lon' in f.variables)
+        assert('jrat.cla' in f.variables)
+        assert('jrat.clo' in f.variables)
 
     assert(os.path.exists(masks))
     with nc.Dataset(masks) as f:
-        assert(f.variables.has_key('momt.msk'))
-        assert(f.variables.has_key('momu.msk'))
+        assert('momt.msk' in f.variables)
+        assert('momu.msk' in f.variables)
 
-        assert(f.variables.has_key('cict.msk'))
-        assert(f.variables.has_key('cicu.msk'))
+        assert('cict.msk' in f.variables)
+        assert('cicu.msk' in f.variables)
 
-        assert(f.variables.has_key('cort.msk'))
+        assert('cort.msk' in f.variables)
 
-        assert(f.variables.has_key('jrat.msk'))
+        assert('jrat.msk' in f.variables)
 
 
 def check_masks_values(masks, keys):
@@ -277,16 +277,16 @@ class TestOasisGrids():
         mom_args = ['--model_hgrid', mom_hgrid, '--model_mask', mom_mask,
                     '--grids', output_grids, '--areas', output_areas,
                     '--masks', output_masks, 'MOM']
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mom_args
         ret = sp.call(cmd + mom_args)
         assert(ret == 0)
 
-        # MOM 1 deg grid
+        # MOM 1 deg grid. We supply a grid name here to distinguish from
+        # the above
         mo1_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mo1_mask = os.path.join(input_dir, 'grid_spec.nc')
         mo1_args = ['--model_hgrid', mo1_hgrid, '--model_mask', mo1_mask,
                     '--grids', output_grids, '--areas', output_areas,
-                    '--masks', output_masks, 'MOM1']
+                    '--masks', output_masks, '--grid_name', 'mo1', 'MOM']
         ret = sp.call(cmd + mo1_args)
         assert(ret == 0)
 
@@ -320,7 +320,7 @@ class TestOasisGrids():
                 'nemu.srf', 'nemv.srf', 'spet.srf', 'fvot.srf']
         check_areas_values(output_areas, keys)
 
-
+    @pytest.mark.slow
     def test_accessom_tenth(self, input_dir, output_grids, output_areas,
                             output_masks):
         """
@@ -331,13 +331,15 @@ class TestOasisGrids():
         outputs = [output_areas, output_grids, output_masks]
         cleanup(outputs)
 
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')]
+
         # MOM 0.1 deg grid
         mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
         mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
         mom_args = ['--model_hgrid', mom_hgrid, '--model_mask', mom_mask,
                     '--grids', output_grids, '--areas', output_areas,
                     '--masks', output_masks, 'MOM']
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] + mom_args
         ret = sp.call(cmd + mom_args)
         assert(ret == 0)
 

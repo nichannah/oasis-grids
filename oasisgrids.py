@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 import sys, os
 import argparse
 import netCDF4 as nc
 import numpy as np
 
+sys.path.append('./esmgrids')
+
 from esmgrids.mom_grid import MomGrid
+from esmgrids.cice_grid import CiceGrid
 from esmgrids.nemo_grid import NemoGrid
 from esmgrids.t42_grid import T42Grid
 from esmgrids.fv300_grid import FV300Grid
@@ -40,12 +41,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("model_name", help="""
         The the model name. Supported names are:
-            - MOM   # 1, 0.25 and 0.1 degree MOM ocean
-            - NEMO  # ocean
-            - SPE   # T42 spectral atmos
-            - FVO   # 2 degree atmos
-            - CORE2 # CORE2 atmosphere
-            - JRA55 # JRA55 atmosphere
+            MOM   (1, 0.25 and 0.1 degree MOM ocean),
+            NEMO  (ocean),
+            SPE   (T42 spectral atmos),
+            FVO   (2 degree atmos),
+            CORE2 (CORE2 atmosphere),
+            JRA55 (JRA55 atmosphere)
             """)
     parser.add_argument("--grid_name", default=None, help="""
         The OASIS name for the grid being created.
@@ -115,12 +116,10 @@ def main():
                                           description='FV')
         cells = ('t')
     elif args.model_name == 'CORE2':
-        model_grid = Core2Grid(192, 94, 1, args.model_mask,
-                               description=args.model_name)
+        model_grid = Core2Grid()
         cells = ('t')
     elif args.model_name == 'JRA55':
-        model_grid = Jra55Grid(360, 180, 1, args.model_mask,
-                               description=args.model_name)
+        model_grid = Jra55Grid()
         cells = ('t')
     else:
         assert False
