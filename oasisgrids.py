@@ -6,14 +6,6 @@ import netCDF4 as nc
 import numpy as np
 
 sys.path.append('./esmgrids')
-
-from esmgrids.mom_grid import MomGrid
-from esmgrids.cice_grid import CiceGrid
-from esmgrids.nemo_grid import NemoGrid
-from esmgrids.t42_grid import T42Grid
-from esmgrids.fv300_grid import FV300Grid
-from esmgrids.core2_grid import Core2Grid
-from esmgrids.jra55_grid import Jra55Grid
 from esmgrids.oasis_grid import OasisGrid
 
 def check_args(args):
@@ -91,6 +83,8 @@ def main():
         print(err, file=sys.stderr)
         parser.print_help()
         return 1
+
+    model_grid = grid_factory.factory(args.model_name)
 
     if args.model_name == 'MOM':
         model_grid = MomGrid.fromfile(args.model_hgrid,

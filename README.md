@@ -5,7 +5,7 @@
 
 Create OASIS3-MCT model coupling grid configurations.
 
-This tool is a grid translator. It takes model grid definitions as netCDF files, converts to an Object/Python representation, then translates these to a format understood by the OASIS3-MCT coupler.
+The oasisgrids.py tool is a grid translator. It takes model grid definitions as netCDF files, converts to an Object/Python representation, then translates these to a format understood by the OASIS3-MCT coupler.
 
 # Description
 
@@ -18,7 +18,9 @@ At a high level the OASIS regridding setup looks like this:
 3. OASIS uses grids from above and it's namcouple configuration to create regridding weights files for each pair of coupled grids. This only needs to be done once, thereafter the regridding weights files are reused.
 4. During runtime the regridding weights files are used to interpolate fields between model grids.
 
-The tool takes care of step 2 in this process. ~~In addition it provides an option to also do step 3. The advantage of doing step 3 offline, rather than depending on OASIS to do it, is that a more sophisticated (and a lot faster) regridding weight generation tool can be used.~~
+The oasisgrids.py tool takes care of step 2 in this process.
+
+In addition it provides an option to also do step 3. The advantage of doing step 3 offline, rather than depending on OASIS to do it, is that a more sophisticated (and a lot faster) regridding weight generation tool can be used. Step 3 depends on [ESMF_RegridWeighGen](https://www.earthsystemcog.org/projects/regridweightgen/)
 
 # Use
 
