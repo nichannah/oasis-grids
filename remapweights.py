@@ -4,9 +4,53 @@ import sys, os
 import argparse
 import netCDF4 as nc
 import numpy as np
+import numba
+import tempfile
+import subprocess as sp
 
 sys.path.append('./esmgrids')
 from grid_factory import factory
+
+def create_regrid_weights(src_grid, dest_grid, method='bilinear',
+                          unmasked_src=True, unmasked_dest=False):
+
+    assert method == 'bilinear' or method == 'neareststod'
+
+    _, src_grid_scrip = tempfile.mkstemp(suffix='.nc')
+    _, dest_grid_scrip = tempfile.mkstemp(suffix='.nc')
+    _, regrid_weights = tempfile.mkstemp(suffix='.nc')
+
+    if unmasked_src:
+        src_grid.write_scrip(src_grid_scrip,
+                            mask=np.zeros_like(src_grid.mask_t, dtype=int))
+    else:
+        src_grid.write_scrip(src_grid_scrip)
+
+    if unmasked_dest:
+        dest_grid.write_scrip(dest_grid_scrip,
+                              mask=np.zeros_like(dest_grid.mask_t, dtype=int))
+    else:
+        dest_grid.write_scrip(dest_grid_scrip)
+
+    try:
+        sp.check_output(['ESMF_RegridWeightGen', '-s', src_grid_scrip,
+                         '-d', dest_grid_scrip, '-m', method,
+                         '-w', regrid_weights])
+    except sp.CalledProcessError as e:
+        print("Error: ESMF_RegridWeightGen failed ret {}".format(e.returncode),
+              file=sys.stderr)
+        print(e.output, file=sys.stderr)
+        log = 'PET0.RegridWeightGen.Log'
+        if os.path.exists(log):
+            print('Contents of {}:'.format(log), file=sys.stderr)
+            with open(log) as f:
+                print(f.read(), file=sys.stderr)
+        return None
+
+    os.remove(src_grid_scrip, dest_grid_scrip)
+
+    return regrid_weights
+
 
 def main():
 
@@ -20,22 +64,40 @@ def main():
             CORE2 (CORE2 atmosphere),
             JRA55 (JRA55 atmosphere),
             """)
-    parser.add_argument("src_grid", help="File containing src grid definition")
     parser.add_argument("dest_name", help="""
         The name of the dest grid/model. Supported names are the same as
-        for src_name.)
-        """
-    parser.add_argument("dest_grid", help="File containing dest grid def.")
-    parser.add_argument("--src_mask", help="File containing src mask def.")
-    parser.add_argument("--dest_mask", help="File containing dest mask def.")
-    parser.add_argument("--method", default=None, help="""
+        for src_name.
+        """)
+    parser.add_argument("--src_grid", default=None,
+                        help="File containing src grid definition")
+    parser.add_argument("--dest_grid", default=None,
+                        help="File containing dest grid def.")
+    parser.add_argument("--src_mask", default=None,
+                        help="File containing src mask def.")
+    parser.add_argument("--dest_mask", default=None,
+                        help="File containing dest mask def.")
+    parser.add_argument("--method", default='bilinear', help="""
         The remapping method to be used.""")
+    parser.add_argument("--output", default=None, help="""
+        Name of the output file.""")
 
     args = parser.parse_args()
 
-    src_grid = factory(args.src_name, args.src_grid, args.src_mask) 
-    dest_grid = factory(args.src_name, args.src_grid, args.src_mask) 
+    if args.output is None:
+        args.output = '{}_{}_{}_rmp.nc'.format(args.src_name,
+                                               args.dest_name, args.method)
 
+    src_grid = factory(args.src_name, args.src_grid, args.src_mask)
+    dest_grid = factory(args.src_name, args.src_grid, args.src_mask)
+
+    regrid_weights = create_regrid_weights(src_grid, dest_grid)
+
+    if regrid_weights is None:
+        return 1
+    else:
+        os.rename(regrid_weights, args.output)
+
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())

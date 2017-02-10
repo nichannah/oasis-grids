@@ -17,4 +17,9 @@ install:
   - conda env create -f esmgrids/grids.yml
   - source activate grids
 
+  # Install ESMF
+  - cd contrib
+  - source build_esmf.sh
+  - cd ../
+
 script: python -m pytest test/

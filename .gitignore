@@ -3,6 +3,12 @@ test/test_data.tar.gz
 test/example_output*
 *.swp
 
+PET0.RegridWeightGen.Log
+contrib/PET0.RegridWeightGen.Log
+contrib/bin/
+contrib/esmf/
+contrib/esmf_7_0_0_src.tar.gz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
