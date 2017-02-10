@@ -51,7 +51,7 @@ class TestRemap():
     test_dir = os.path.dirname(os.path.realpath(__file__))
     test_data_dir = os.path.join(test_dir, 'test_data')
     test_data_tarball = os.path.join(test_dir, data_tarball)
-    output_dir = os.path.join(test_data_dir, 'output')
+    out_dir = os.path.join(test_data_dir, 'output')
 
     @pytest.fixture
     def input_dir(self):
@@ -62,6 +62,10 @@ class TestRemap():
             sh.tar('zxvf', self.test_data_tarball, '-C', self.test_dir)
 
         return os.path.join(self.test_data_dir, 'input')
+
+    @pytest.fixture
+    def output_dir(self):
+        return self.out_dir
 
     @pytest.mark.slow
     def test_core2_to_mom_tenth_remapping(self, input_dir):
@@ -78,7 +82,7 @@ class TestRemap():
         assert(ret == 0)
 
     @pytest.mark.fast
-    def test_core2_to_mom_one_remapping(self, input_dir):
+    def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
@@ -86,8 +90,14 @@ class TestRemap():
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mom_mask = os.path.join(input_dir, 'grid_spec.nc')
 
-        args = ['MOM', 'CORE2', '--src_grid', mom_hgrid,
-                '--src_mask', mom_mask] 
+        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
+
+        print(output_dir)
+        output = os.path.join(output_dir, 'CORE2_MOM_bilinear.nc')
+
+        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
+                '--dest_grid', mom_hgrid, '--dest_mask', mom_mask, 
+		'--output', output]
         ret = sp.call(cmd + args)
         assert(ret == 0)
-
+        assert os.path.exists(output)

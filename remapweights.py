@@ -47,7 +47,8 @@ def create_regrid_weights(src_grid, dest_grid, method='bilinear',
                 print(f.read(), file=sys.stderr)
         return None
 
-    os.remove(src_grid_scrip, dest_grid_scrip)
+    os.remove(src_grid_scrip)
+    os.remove(dest_grid_scrip)
 
     return regrid_weights
 

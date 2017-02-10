@@ -35,7 +35,7 @@ def factory(model_name, model_hgrid, model_mask, model_rows=None, model_cols=Non
         model_grid = FV300Grid(model_cols, model_rows, 1, model_mask,
                                           description='FV')
     elif model_name == 'CORE2':
-        model_grid = Core2Grid()
+        model_grid = Core2Grid(model_hgrid)
     elif model_name == 'JRA55':
         model_grid = Jra55Grid()
     else:
