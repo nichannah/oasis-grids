@@ -6,6 +6,7 @@ import netCDF4 as nc
 import numpy as np
 
 sys.path.append('./esmgrids')
+from grid_factory import factory
 
 def main():
 
@@ -18,7 +19,6 @@ def main():
             FVO   (2 degree atmos),
             CORE2 (CORE2 atmosphere),
             JRA55 (JRA55 atmosphere),
-            OASIS (OASIS3-MCT grid definition files).
             """)
     parser.add_argument("src_grid", help="File containing src grid definition")
     parser.add_argument("dest_name", help="""
@@ -32,6 +32,8 @@ def main():
         The remapping method to be used.""")
 
     args = parser.parse_args()
+
+    src_grid = factory(
 
 if __name__ == "__main__":
     sys.exit(main())

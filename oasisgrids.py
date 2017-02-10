@@ -7,6 +7,7 @@ import numpy as np
 
 sys.path.append('./esmgrids')
 from esmgrids.oasis_grid import OasisGrid
+from grid_factory import factory
 
 def check_args(args):
 
@@ -84,41 +85,9 @@ def main():
         parser.print_help()
         return 1
 
-    model_grid = grid_factory.factory(args.model_name)
-
-    if args.model_name == 'MOM':
-        model_grid = MomGrid.fromfile(args.model_hgrid,
-                                      mask_file=args.model_mask)
-        cells = ('t', 'u')
-    elif args.model_name == 'CICE':
-        model_grid = CiceGrid.fromfile(args.model_hgrid,
-                                       mask_file=args.model_mask)
-        cells = ('t', 'u')
-    elif args.model_name == 'NEMO':
-        model_grid = NemoGrid(args.model_hgrid, mask_file=args.model_mask)
-        cells = ('t', 'u', 'v')
-    elif args.model_name == 'SPE':
-        num_lons = args.model_cols
-        num_lats = args.model_rows
-        model_grid = T42Grid(num_lons, num_lats, 1, args.model_mask,
-                                      description='Spectral')
-        cells = ('t')
-    elif args.model_name == 'FVO':
-        num_lons = args.model_cols
-        num_lats = args.model_rows
-        model_grid = FV300Grid(num_lons, num_lats, 1, args.model_mask,
-                                          description='FV')
-        cells = ('t')
-    elif args.model_name == 'CORE2':
-        model_grid = Core2Grid()
-        cells = ('t')
-    elif args.model_name == 'JRA55':
-        model_grid = Jra55Grid()
-        cells = ('t')
-    else:
-        assert False
-
-    coupling_grid = OasisGrid(args.grid_name, model_grid, cells)
+    model_grid = factory(args.model_name, args.model_hgrid, args.model_mask, 
+                         args.model_rows, args.model_cols)
+    coupling_grid = OasisGrid(args.grid_name, model_grid)
 
     coupling_grid.write_grids(args.grids)
     coupling_grid.write_areas(args.areas)
