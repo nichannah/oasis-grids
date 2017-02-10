@@ -89,9 +89,11 @@ def main():
                                                args.dest_name, args.method)
 
     src_grid = factory(args.src_name, args.src_grid, args.src_mask)
-    dest_grid = factory(args.src_name, args.src_grid, args.src_mask)
+    dest_grid = factory(args.dest_name, args.dest_grid, args.dest_mask)
 
-    regrid_weights = create_regrid_weights(src_grid, dest_grid)
+    regrid_weights = create_regrid_weights(src_grid, dest_grid,
+                                           unmasked_src=True,
+                                           unmasked_dest=True)
 
     if regrid_weights is None:
         return 1
