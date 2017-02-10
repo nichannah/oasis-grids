@@ -10,7 +10,7 @@ from esmgrids.fv300_grid import FV300Grid
 from esmgrids.core2_grid import Core2Grid
 from esmgrids.jra55_grid import Jra55Grid
 
-def factory(model_name, model_hgrid, model_mask, model_rows, model_cols):
+def factory(model_name, model_hgrid, model_mask, model_rows=None, model_cols=None):
 
     if model_name == 'MOM':
         model_grid = MomGrid.fromfile(model_hgrid,
@@ -21,9 +21,17 @@ def factory(model_name, model_hgrid, model_mask, model_rows, model_cols):
     elif model_name == 'NEMO':
         model_grid = NemoGrid(model_hgrid, mask_file=model_mask)
     elif model_name == 'SPE':
+        if model_rows is None:
+            model_rows = 64
+        if model_cols is None:
+            model_rows = 128
         model_grid = T42Grid(model_cols, model_rows, 1, model_mask,
                                       description='Spectral')
     elif model_name == 'FVO':
+        if model_rows is None:
+            model_rows = 64
+        if model_cols is None:
+            model_rows = 128
         model_grid = FV300Grid(model_cols, model_rows, 1, model_mask,
                                           description='FV')
     elif model_name == 'CORE2':

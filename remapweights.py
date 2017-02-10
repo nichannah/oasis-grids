@@ -33,7 +33,9 @@ def main():
 
     args = parser.parse_args()
 
-    src_grid = factory(
+    src_grid = factory(args.src_name, args.src_grid, args.src_mask) 
+    dest_grid = factory(args.src_name, args.src_grid, args.src_mask) 
+
 
 if __name__ == "__main__":
     sys.exit(main())
