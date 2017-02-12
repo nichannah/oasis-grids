@@ -1,3 +1,6 @@
 [submodule "esmgrids"]
 	path = esmgrids
 	url = https://github.com/nicjhan/esmgrids.git
+[submodule "test/oasis/oasis3-mct"]
+	path = test/oasis/oasis3-mct
+	url = https://github.com/OceansAus/oasis3-mct.git

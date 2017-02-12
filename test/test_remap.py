@@ -145,10 +145,18 @@ class TestRemap():
 
         check_remapping_weights(output, core2, mom)
 
-    def test_compare_to_oasis(self):
+    def test_compare_to_low_res_oasis(self):
         """
         Write some basic Fortran code that remaps a single field using
-        OASIS. Compare it to the approach here.
+        OASIS. Compare it to the approach above.
         """
+
+        # Make oasis grids
+
+        # Build models
+
+        # Copy everything to a work directory
+
+        # Run model, exchanging a single field
 
         pass
