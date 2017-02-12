@@ -4,7 +4,6 @@ module coupler
 use mod_oasis, only : oasis_init_comp, oasis_def_var, oasis_get_localcomm, &
                       oasis_def_partition, oasis_enddef, OASIS_OK, OASIS_REAL, &
                       OASIS_IN, OASIS_OUT, oasis_put, oasis_get, oasis_terminate
-use error_handler , only : assert
 use mpi, only : mpi_init, mpi_comm_size, mpi_comm_rank, MPI_SUCCESS
 
 implicit none
@@ -193,5 +192,19 @@ subroutine coupler_close()
     call oasis_terminate(ierror)
 
 end subroutine
+
+subroutine assert(res, error_msg)
+
+    logical, intent(in) :: res
+    character(len=*), intent(in) :: error_msg
+
+    if (.not. res) then
+        print *, 'Error: '//error_msg
+        !write(error_unit, error_msg)
+        call exit(1)
+    endif
+
+end subroutine
+
 
 end module

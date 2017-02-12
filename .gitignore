@@ -3,6 +3,13 @@ test/test_data.tar.gz
 test/example_output*
 *.swp
 
+*.o
+*.a
+*.mod
+
+test/oasis/model_dest
+test/oasis/model_src
+
 PET0.RegridWeightGen.Log
 contrib/PET0.RegridWeightGen.Log
 contrib/bin/
