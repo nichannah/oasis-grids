@@ -2,7 +2,6 @@
 import pytest
 import sys, os
 import subprocess as sp
-import sh
 import numpy as np
 import numba
 import netCDF4 as nc
@@ -11,8 +10,7 @@ sys.path.append('./esmgrids')
 from esmgrids.mom_grid import MomGrid
 from esmgrids.core2_grid import Core2Grid
 
-data_tarball = 'test_data.tar.gz'
-data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
+from helpers import setup_test_input_dir, setup_test_output_dir
 
 @numba.jit
 def apply_weights(src, dest_shape, n_s, n_b, row, col, s):
@@ -62,26 +60,18 @@ def check_remapping_weights(weights, src_grid, dest_grid):
     # destination grid, find corrosponding point on the src grid and
     # compare.
 
+    return src_data, dest_data
+
 
 class TestRemap():
-    test_dir = os.path.dirname(os.path.realpath(__file__))
-    test_data_dir = os.path.join(test_dir, 'test_data')
-    test_data_tarball = os.path.join(test_dir, data_tarball)
-    out_dir = os.path.join(test_data_dir, 'output')
 
     @pytest.fixture
     def input_dir(self):
-
-        if not os.path.exists(self.test_data_dir):
-            if not os.path.exists(self.test_data_tarball):
-                sh.wget('-P', self.test_dir, data_tarball_url)
-            sh.tar('zxvf', self.test_data_tarball, '-C', self.test_dir)
-
-        return os.path.join(self.test_data_dir, 'input')
+        return setup_test_input_dir()
 
     @pytest.fixture
     def output_dir(self):
-        return self.out_dir
+        return setup_test_output_dir()
 
     @pytest.mark.slow
     def test_core2_to_mom_tenth_remapping(self, input_dir):
@@ -93,11 +83,10 @@ class TestRemap():
         mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
 
         args = ['MOM', 'CORE2', '--src_grid', mom_hgrid,
-                '--src_mask', mom_mask] 
+                '--src_mask', mom_mask]
         ret = sp.call(cmd + args)
-        assert(ret == 0)
+        assert ret == 0
 
-    @pytest.mark.fast
     def test_mom_to_mom_remapping(self, input_dir, output_dir):
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -111,7 +100,7 @@ class TestRemap():
         args = ['MOM', 'MOM', '--src_grid', mom_hgrid,
                 '--dest_grid', mom_hgrid, '--output', output]
         ret = sp.call(cmd + args)
-        assert(ret == 0)
+        assert ret == 0
         assert os.path.exists(output)
 
         # Only use these to pull out the dimensions of the grids.
@@ -136,27 +125,20 @@ class TestRemap():
                 '--dest_grid', mom_hgrid, '--dest_mask', mom_mask, 
 		'--output', output]
         ret = sp.call(cmd + args)
-        assert(ret == 0)
+        assert ret == 0
         assert os.path.exists(output)
 
         # Only use these to pull out the dimensions of the grids.
         mom = MomGrid.fromfile(mom_hgrid, mask_file=mom_mask)
         core2 = Core2Grid(core2_hgrid)
 
-        check_remapping_weights(output, core2, mom)
+        src, dest = check_remapping_weights(output, core2, mom)
 
-    def test_compare_to_low_res_oasis(self):
-        """
-        Write some basic Fortran code that remaps a single field using
-        OASIS. Compare it to the approach above.
-        """
+        # Write out remapped files.
+        for name, data in [('src_field', src), ('dest_field', dest)]:
+            with nc.Dataset(os.path.join(output_dir, name + '.nc'), 'w') as f:
+                f.createDimension('ny', data.shape[0])
+                f.createDimension('nx', data.shape[1])
 
-        # Make oasis grids
-
-        # Build models
-
-        # Copy everything to a work directory
-
-        # Run model, exchanging a single field
-
-        pass
+                var = f.createVariable(name, 'f8', ('ny','nx'))
+                var[:] = data[:]

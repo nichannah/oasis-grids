@@ -6,8 +6,7 @@ import sh
 import numpy as np
 import netCDF4 as nc
 
-data_tarball = 'test_data.tar.gz'
-data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
+from helpers import setup_test_input_dir, setup_test_output_dir
 
 def cleanup(outputs):
 
@@ -179,33 +178,36 @@ def check_areas_values(areas, keys):
             assert abs(1 - np.sum(area) / EARTH_AREA) < 5e-2
 
 
-class TestOasisGrids():
-    test_dir = os.path.dirname(os.path.realpath(__file__))
-    test_data_dir = os.path.join(test_dir, 'test_data')
-    test_data_tarball = os.path.join(test_dir, data_tarball)
-    output_dir = os.path.join(test_data_dir, 'output')
+def check_for_holes(grids):
+    """
+    For proper consevative remapping, the corners of a cell have to
+    coincide with the corners of its neighbour cell, with no “holes”
+    between the cells.
+    """
 
+    # FIXME: do this.
+    pass
+
+
+class TestOasisGrids():
     @pytest.fixture
     def input_dir(self):
-
-        if not os.path.exists(self.test_data_dir):
-            if not os.path.exists(self.test_data_tarball):
-                sh.wget('-P', self.test_dir, data_tarball_url)
-            sh.tar('zxvf', self.test_data_tarball, '-C', self.test_dir)
-
-        return os.path.join(self.test_data_dir, 'input')
+        return setup_test_input_dir()
 
     @pytest.fixture
     def output_grids(self):
-        return os.path.join(self.output_dir, 'grids.nc')
+        output_dir = setup_test_output_dir()
+        return os.path.join(output_dir, 'grids.nc')
 
     @pytest.fixture
     def output_areas(self):
-        return os.path.join(self.output_dir, 'areas.nc')
+        output_dir = setup_test_output_dir()
+        return os.path.join(output_dir, 'areas.nc')
 
     @pytest.fixture
     def output_masks(self):
-        return os.path.join(self.output_dir, 'masks.nc')
+        output_dir = setup_test_output_dir()
+        return os.path.join(output_dir, 'masks.nc')
 
     def test_double_write(self, input_dir, output_grids, output_areas, output_masks):
         """
@@ -324,8 +326,6 @@ class TestOasisGrids():
     def test_accessom_tenth(self, input_dir, output_grids, output_areas,
                             output_masks):
         """
-        Test that a combination of MOM, NEMO, T42 spectral and FV grids can be
-        combined together into the OASIS grids.
         """
 
         outputs = [output_areas, output_grids, output_masks]
@@ -364,11 +364,11 @@ class TestOasisGrids():
         ret = sp.call(cmd + jra55_args)
         assert(ret == 0)
 
-        check_accessom_tenth_vars_exist(output_areas, output_grids, output_masks)
+        check_accessom_tenth_vars_exist(output_areas, output_grids,
+                                        output_masks)
         keys = ['momt.msk', 'momu.msk', 'cict.msk', 'cicu.msk',
                 'cort.msk', 'jrat.msk']
         check_masks_values(output_masks, keys)
         keys = ['momt.srf', 'momu.srf', 'cict.srf', 'cicu.srf',
                 'cort.srf', 'jrat.srf']
         check_areas_values(output_areas, keys)
-

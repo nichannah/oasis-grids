@@ -9,8 +9,9 @@ use mpi, only : mpi_init, mpi_comm_size, mpi_comm_rank, MPI_SUCCESS
 implicit none
 
 private
-public coupler_init, coupler_init_done, coupler_add_field, coupler_destroy_field, &
-       coupler_put, coupler_get, coupler_close, couple_field_type, &
+public coupler_init, coupler_init_done, coupler_add_field, &
+       coupler_destroy_field, coupler_put, coupler_get, coupler_close, &
+       coupler_dump_field, couple_field_type, &
        COUPLER_MAX_FIELDS, COUPLER_MAX_FIELD_NAME_LEN, COUPLER_OUT, COUPLER_IN
 
 ! Type declarations.
@@ -190,6 +191,7 @@ subroutine coupler_close()
     integer :: ierror
 
     call oasis_terminate(ierror)
+    call mpi_finalize(ierror)
 
 end subroutine
 
@@ -206,5 +208,47 @@ subroutine assert(res, error_msg)
 
 end subroutine
 
+subroutine coupler_dump_field(field, file_name)
+
+    use netcdf
+
+    type(couple_field_type), intent(inout) :: field
+    character(len=*), intent(in) :: file_name
+
+    integer :: file_id, xdim_id, ydim_id
+    integer :: array_id
+    integer, dimension(2) :: arrdims
+    character(len=*), parameter :: arrunit = 'ergs'
+
+    integer :: i, j
+    integer :: ierr
+
+    i = size(field%field ,1)
+    j = size(field%field ,2)
+
+    ! create the file
+    ierr = nf90_create(path=trim(file_name), cmode=NF90_CLOBBER, ncid=file_id)
+
+    ! define the dimensions
+    ierr = nf90_def_dim(file_id, 'X', i, xdim_id)
+    ierr = nf90_def_dim(file_id, 'Y', j, ydim_id)
+
+    ! now that the dimensions are defined, we can define variables on them,...
+    arrdims = (/ xdim_id, ydim_id /)
+    ierr = nf90_def_var(file_id, 'Array',  NF90_DOUBLE, arrdims, array_id)
+
+    ! ...and assign units to them as an attribute
+    ierr = nf90_put_att(file_id, array_id, "units", arrunit)
+
+    ! done defining
+    ierr = nf90_enddef(file_id)
+
+    ! Write out the values
+    ierr = nf90_put_var(file_id, array_id, field%field)
+
+    ! close; done
+    ierr = nf90_close(file_id)
+
+end subroutine coupler_dump_field
 
 end module

@@ -3,7 +3,8 @@ program model_dest
 
 use coupler, only : coupler_init, coupler_init_done, coupler_close, &
                     coupler_get, coupler_put, coupler_add_field, &
-                    coupler_destroy_field, couple_field_type, COUPLER_IN
+                    coupler_destroy_field, couple_field_type, &
+                    COUPLER_IN, coupler_dump_field
 
 implicit none
 
@@ -15,11 +16,13 @@ implicit none
     allocate(fields(1))
 
     ! Create/add the coupling field.
-    call coupler_add_field(fields(1), 'field', COUPLER_IN)
+    call coupler_add_field(fields(1), 'dest_field', COUPLER_IN)
     call coupler_init_done()
 
     ! Get fields from coupler and write out.
     call coupler_get(0, fields)
+
+    call coupler_dump_field(fields(1), 'dest_field.nc')
 
     call coupler_destroy_field(fields(1))
 

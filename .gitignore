@@ -9,6 +9,15 @@ test/example_output*
 
 test/oasis/model_dest
 test/oasis/model_src
+test/oasis/debug.01.000000
+test/oasis/debug.02.000000
+test/oasis/debug.root.01
+test/oasis/debug.root.02
+test/oasis/namcouple
+test/oasis/namcouple.old
+test/oasis/nout.000000
+test/oasis/overlap.dat
+test/oasis/*.nc
 
 PET0.RegridWeightGen.Log
 contrib/PET0.RegridWeightGen.Log
