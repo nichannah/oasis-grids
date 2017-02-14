@@ -259,7 +259,7 @@ class TestOasisGrids():
             assert np.array_equal(fm.variables['momt.msk'][:], tmsk[:])
             assert np.array_equal(fm.variables['momu.msk'][:], umsk[:])
 
-
+    @pytest.mark.fast
     def test_first_combo(self, input_dir, output_grids, output_areas,
                          output_masks):
         """
@@ -271,7 +271,7 @@ class TestOasisGrids():
         cleanup(outputs)
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')] 
+        cmd = [os.path.join(my_dir, '../', 'oasisgrids.py')]
 
         # MOM 0.25 deg grid
         mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')

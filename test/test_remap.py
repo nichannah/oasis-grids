@@ -109,7 +109,7 @@ class TestRemap():
         check_remapping_weights(output, mom, mom)
 
     @pytest.mark.fast
-    def test_core2_to_mom_remapping(self, input_dir, output_dir):
+    def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
