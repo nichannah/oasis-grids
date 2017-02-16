@@ -41,7 +41,6 @@ def create_regrid_weights(src_grid, dest_grid, method='conserve',
                         '-s', src_grid_scrip,
                         '-d', dest_grid_scrip, '-m', method,
                         '-w', regrid_weights]
-        print(' '.join(cmd))
         sp.check_output(cmd)
     except sp.CalledProcessError as e:
         print("Error: ESMF_RegridWeightGen failed ret {}".format(e.returncode),

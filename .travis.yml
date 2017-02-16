@@ -22,4 +22,4 @@ install:
   - source build_esmf.sh
   - cd ../
 
-script: python -m pytest test/
+script: python -m pytest -s -m "not big_ram" test/

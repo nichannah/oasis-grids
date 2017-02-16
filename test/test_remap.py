@@ -106,6 +106,7 @@ class TestRemap():
         return setup_test_output_dir()
 
     @pytest.mark.accessom_tenth
+    @pytest.mark.big_ram
     def test_core2_to_mom_tenth_weights(self, input_dir, output_dir):
         """
         Generate weights for core2 to MOM 0.1 remapping.
@@ -126,7 +127,7 @@ class TestRemap():
         assert ret == 0
         assert os.path.exists(weights)
 
-
+    @pytest.mark.big_ram
     def test_core2_to_mom_tenth_remapping(self, input_dir):
         """
         Do a test remapping between core2 and MOM 0.1 grid. This is a superset
@@ -138,8 +139,14 @@ class TestRemap():
 
         src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
                                                 mom_hgrid, mom_mask)
-        import pdb
-        pdb.set_trace()
+
+        rel_err = abs(src_tot - dest_tot) / dest_tot
+
+        print('ESMF src_total {}'.format(src_tot))
+        print('ESMF dest_total {}'.format(src_tot))
+        print('ESMF relative error {}'.format(rel_err))
+
+        assert np.allclose(src_tot, dest_tot, rtol=1e-15)
 
 
     def test_mom_to_mom_remapping(self, input_dir, output_dir):
