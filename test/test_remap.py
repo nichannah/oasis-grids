@@ -67,13 +67,10 @@ def remap(src_data, weights, src_grid, dest_grid):
 
     return dest_data
 
-def remap_core2_to_mom(input_dir, output_dir):
+def remap_core2_to_mom(input_dir, output_dir, mom_hgrid, mom_mask):
 
     my_dir = os.path.dirname(os.path.realpath(__file__))
     cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
-
-    mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
-    mom_mask = os.path.join(input_dir, 'grid_spec.nc')
 
     core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
 
@@ -109,18 +106,40 @@ class TestRemap():
         return setup_test_output_dir()
 
     @pytest.mark.slow
-    def test_core2_to_mom_tenth_remapping(self, input_dir):
+    def test_core2_to_mom_tenth_weights(self, input_dir, output_dir):
+        """
+        Generate weights for core2 to MOM 0.1 remapping.
+        """
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
+        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
+
+        weights = os.path.join(output_dir, 'CORE2_MOM01_conserve.nc')
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
+        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
+                '--dest_grid', mom_hgrid, '--dest_mask', mom_mask,
+                '--method', 'conserve', '--output', weights]
+        ret = sp.call(cmd + args)
+        assert ret == 0
+        assert os.path.exists(weights)
+
+
+    def test_core2_to_mom_tenth_remapping(self, input_dir):
+        """
+        Do a test remapping between core2 and MOM 0.1 grid. This is a superset
+        of the test above.
+        """
 
         mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
         mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
 
-        args = ['MOM', 'CORE2', '--src_grid', mom_hgrid,
-                '--src_mask', mom_mask]
-        ret = sp.call(cmd + args)
-        assert ret == 0
+        src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
+                                                mom_hgrid, mom_mask)
+        import pdb
+        pdb.set_trace()
 
 
     def test_mom_to_mom_remapping(self, input_dir, output_dir):
@@ -151,7 +170,11 @@ class TestRemap():
     @pytest.mark.fast
     def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
 
-        src, dest, weights = remap_core2_to_mom(input_dir, output_dir)
+        mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
+        mom_mask = os.path.join(input_dir, 'grid_spec.nc')
+
+        src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
+                                                mom_hgrid, mom_mask)
 
         # Write out remapped files.
         for name, data in [('esmf_src_field', src), ('esmf_dest_field', dest)]:
@@ -179,9 +202,12 @@ class TestRemap():
         Compare areas for CORE2 and MOM with those calculated by ESMF
         remapping.
         """
-        pass
 
-        _, _, weights = remap_core2_to_mom(input_dir, output_dir)
+        mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
+        mom_mask = os.path.join(input_dir, 'grid_spec.nc')
+
+        _, _, weights = remap_core2_to_mom(input_dir, output_dir,
+                                           mom_hgrid, mom_mask)
 
         core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
         core2 = Core2Grid(core2_hgrid)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, os
+import sh
 import argparse
 import netCDF4 as nc
 import numpy as np
@@ -12,7 +13,8 @@ sys.path.append('./esmgrids')
 from grid_factory import factory
 
 def create_regrid_weights(src_grid, dest_grid, method='conserve',
-                          unmasked_src=True, unmasked_dest=False):
+                          unmasked_src=True, unmasked_dest=False,
+                          npes=4):
 
     _, src_grid_scrip = tempfile.mkstemp(suffix='.nc')
     _, dest_grid_scrip = tempfile.mkstemp(suffix='.nc')
@@ -30,10 +32,17 @@ def create_regrid_weights(src_grid, dest_grid, method='conserve',
     else:
         dest_grid.write_scrip(dest_grid_scrip)
 
+    mpirun = []
+    if sh.which('mpirun') is not None:
+        mpirun = ['mpirun', '-np', str(npes)]
+
     try:
-        sp.check_output(['ESMF_RegridWeightGen', '-s', src_grid_scrip,
-                         '-d', dest_grid_scrip, '-m', method,
-                         '-w', regrid_weights])
+        cmd = mpirun + ['ESMF_RegridWeightGen',
+                        '-s', src_grid_scrip,
+                        '-d', dest_grid_scrip, '-m', method,
+                        '-w', regrid_weights]
+        print(' '.join(cmd))
+        sp.check_output(cmd)
     except sp.CalledProcessError as e:
         print("Error: ESMF_RegridWeightGen failed ret {}".format(e.returncode),
               file=sys.stderr)

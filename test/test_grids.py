@@ -326,6 +326,7 @@ class TestOasisGrids():
     def test_accessom_tenth(self, input_dir, output_grids, output_areas,
                             output_masks):
         """
+        Create OASIS files for ACCESS-OM tenth.
         """
 
         outputs = [output_areas, output_grids, output_masks]
