@@ -13,8 +13,7 @@ sys.path.append('./esmgrids')
 from grid_factory import factory
 
 def create_regrid_weights(src_grid, dest_grid, method='conserve',
-                          unmasked_src=True, unmasked_dest=False,
-                          npes=4):
+                          unmasked_src=True, unmasked_dest=False):
 
     _, src_grid_scrip = tempfile.mkstemp(suffix='.nc')
     _, dest_grid_scrip = tempfile.mkstemp(suffix='.nc')
@@ -34,8 +33,8 @@ def create_regrid_weights(src_grid, dest_grid, method='conserve',
 
     mpirun = []
     if sh.which('mpirun') is not None:
-        mpirun = ['mpirun', '-np', str(npes)]
-
+        import multiprocessing as mp
+        mpirun = ['mpirun', '-np', str(mp.cpu_count())]
     try:
         cmd = mpirun + ['ESMF_RegridWeightGen',
                         '-s', src_grid_scrip,
