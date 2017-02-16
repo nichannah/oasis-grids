@@ -2,6 +2,7 @@
 
 import sys, os
 import sh
+import shutil
 import argparse
 import netCDF4 as nc
 import numpy as np
@@ -105,7 +106,7 @@ def main():
     if regrid_weights is None:
         return 1
     else:
-        os.rename(regrid_weights, args.output)
+        shutil.move(regrid_weights, args.output)
 
     return 0
 
