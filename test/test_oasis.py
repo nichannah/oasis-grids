@@ -2,6 +2,7 @@ import pytest
 import sys, os
 import shlex
 import glob
+import numpy as np
 import subprocess as sp
 
 from helpers import setup_test_input_dir
@@ -30,6 +31,7 @@ class TestOasis():
         ret = sp.call(['make', '-C', oasis_dir])
         assert ret == 0
 
+    @pytest.mark.conservation
     def test_remap_one_deg(self, input_dir, oasis_dir):
         """
         Use OASIS for a one degree remapping.
@@ -87,7 +89,11 @@ class TestOasis():
 
         src_tot, dest_tot = calc_regridding_err(weights, src_file,
                                                 'Array', dest_file, 'Array')
-        print('OASIS src_total {}'.format(src_total))
-        print('OASIS dest_total {}'.format(src_total))
-        assert np.allclose(src_total, dest_total, rtol=1e-9)
+        rel_err = abs(src_tot - dest_tot) / dest_tot
+
+        print('OASIS src_total {}'.format(src_tot))
+        print('OASIS dest_total {}'.format(dest_tot))
+        print('OASIS relative error {}'.format(rel_err))
+
+        assert np.allclose(src_tot, dest_tot, rtol=1e-9)
 

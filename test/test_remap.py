@@ -105,7 +105,7 @@ class TestRemap():
     def output_dir(self):
         return setup_test_output_dir()
 
-    @pytest.mark.slow
+    @pytest.mark.accessom_tenth
     def test_core2_to_mom_tenth_weights(self, input_dir, output_dir):
         """
         Generate weights for core2 to MOM 0.1 remapping.
@@ -167,7 +167,7 @@ class TestRemap():
 
         remap(src, output, mom, mom)
 
-    @pytest.mark.fast
+    @pytest.mark.conservation
     def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
 
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
@@ -191,8 +191,12 @@ class TestRemap():
         src_tot, dest_tot = calc_regridding_err(weights,
                                                 src_file, 'esmf_src_field',
                                                 dest_file, 'esmf_dest_field')
+        rel_err = abs(src_tot - dest_tot) / dest_tot
+
         print('ESMF src_total {}'.format(src_tot))
         print('ESMF dest_total {}'.format(src_tot))
+        print('ESMF relative error {}'.format(rel_err))
+
         assert np.allclose(src_tot, dest_tot, rtol=1e-15)
 
 

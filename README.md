@@ -62,3 +62,7 @@ cd test_data/input
 
 This will result in grids.nc, areas.nc, masks.nc files that contain grid definitions for all of the above models. OASIS will use this to create the remapping weights files depending on the contents of the namcouple file.
 
+# Examples
+
+The [ACCESS-OM development wiki](https://github.com/OceansAus/access-om/wiki/Development) shows how this tool can be used to help couple models together.
+

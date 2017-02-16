@@ -322,7 +322,7 @@ class TestOasisGrids():
                 'nemu.srf', 'nemv.srf', 'spet.srf', 'fvot.srf']
         check_areas_values(output_areas, keys)
 
-    @pytest.mark.slow
+    @pytest.mark.accessom_tenth
     def test_accessom_tenth(self, input_dir, output_grids, output_areas,
                             output_masks):
         """
@@ -354,7 +354,9 @@ class TestOasisGrids():
         assert(ret == 0)
 
         # CORE2 grid
-        core2_args = ['--grids', output_grids, '--areas', output_areas,
+        core2_grid = os.path.join(input_dir, 't_10.0001.nc')
+        core2_args = ['--model_hgrid', core2_grid,
+                      '--grids', output_grids, '--areas', output_areas,
                       '--masks', output_masks, 'CORE2']
         ret = sp.call(cmd + core2_args)
         assert(ret == 0)
