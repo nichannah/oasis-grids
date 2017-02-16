@@ -11,10 +11,8 @@ import subprocess as sp
 sys.path.append('./esmgrids')
 from grid_factory import factory
 
-def create_regrid_weights(src_grid, dest_grid, method='bilinear',
+def create_regrid_weights(src_grid, dest_grid, method='conserve',
                           unmasked_src=True, unmasked_dest=False):
-
-    assert method == 'bilinear' or method == 'neareststod'
 
     _, src_grid_scrip = tempfile.mkstemp(suffix='.nc')
     _, dest_grid_scrip = tempfile.mkstemp(suffix='.nc')
@@ -92,6 +90,7 @@ def main():
     dest_grid = factory(args.dest_name, args.dest_grid, args.dest_mask)
 
     regrid_weights = create_regrid_weights(src_grid, dest_grid,
+                                           method=args.method,
                                            unmasked_src=True,
                                            unmasked_dest=True)
 

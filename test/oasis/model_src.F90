@@ -23,8 +23,7 @@ implicit none
     counter = 0
     do j=1, size(fields(1)%field, 2)
       do i=1, size(fields(1)%field, 1)
-        fields(1)%field(i, j) = counter
-        counter = counter + 1
+        fields(1)%field(i, j) = j
       enddo
     enddo
 

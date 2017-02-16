@@ -5,6 +5,7 @@ import glob
 import subprocess as sp
 
 from helpers import setup_test_input_dir
+from helpers import calc_regridding_err
 
 class TestOasis():
     """
@@ -29,7 +30,6 @@ class TestOasis():
         ret = sp.call(['make', '-C', oasis_dir])
         assert ret == 0
 
-
     def test_remap_one_deg(self, input_dir, oasis_dir):
         """
         Use OASIS for a one degree remapping.
@@ -37,7 +37,7 @@ class TestOasis():
 
         # Delete all netcdf files in oasis dir this will include the OASIS
         # configuration.
-        for f in glob.glob(os.path.join(oasis_dir, '/*.nc')):
+        for f in glob.glob(oasis_dir + '/*.nc'):
             try:
                 os.remove(f)
             except FileNotFoundError as e:
@@ -80,3 +80,14 @@ class TestOasis():
         os.chdir(cur_dir)
 
         # Look at the output of the field.
+        weights = os.path.join(oasis_dir,
+                               'rmp_cort_to_momt_CONSERV_FRACNNEI.nc')
+        src_file = os.path.join(oasis_dir, 'src_field.nc')
+        dest_file = os.path.join(oasis_dir, 'dest_field.nc')
+
+        src_tot, dest_tot = calc_regridding_err(weights, src_file,
+                                                'Array', dest_file, 'Array')
+        print('OASIS src_total {}'.format(src_total))
+        print('OASIS dest_total {}'.format(src_total))
+        assert np.allclose(src_total, dest_total, rtol=1e-9)
+

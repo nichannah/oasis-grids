@@ -11,6 +11,10 @@ from esmgrids.mom_grid import MomGrid
 from esmgrids.core2_grid import Core2Grid
 
 from helpers import setup_test_input_dir, setup_test_output_dir
+from helpers import calc_regridding_err
+
+EARTH_RADIUS = 6370997.0
+EARTH_AREA = 4*np.pi*EARTH_RADIUS**2
 
 @numba.jit
 def apply_weights(src, dest_shape, n_s, n_b, row, col, s):
@@ -28,7 +32,7 @@ def apply_weights(src, dest_shape, n_s, n_b, row, col, s):
     return dest.reshape(dest_shape)
 
 
-def check_remapping_weights(weights, src_grid, dest_grid):
+def remap(src_data, weights, src_grid, dest_grid):
     """
     Regrid a 2d field and see how it looks.
     """
@@ -41,7 +45,8 @@ def check_remapping_weights(weights, src_grid, dest_grid):
     src_data = np.ndarray((src_lats, src_lons))
     dest_data = np.ndarray((dest_lats, dest_lons))
 
-    src_data[:, :] = np.arange(src_lats*src_lons).reshape(src_lats, src_lons)
+    for i in range(src_lats):
+        src_data[i, :] = i
 
     with nc.Dataset(weights) as wf:
         n_s = wf.dimensions['n_s'].size
@@ -60,7 +65,37 @@ def check_remapping_weights(weights, src_grid, dest_grid):
     # destination grid, find corrosponding point on the src grid and
     # compare.
 
-    return src_data, dest_data
+    return dest_data
+
+def remap_core2_to_mom(input_dir, output_dir):
+
+    my_dir = os.path.dirname(os.path.realpath(__file__))
+    cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
+
+    mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
+    mom_mask = os.path.join(input_dir, 'grid_spec.nc')
+
+    core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
+
+    weights = os.path.join(output_dir, 'CORE2_MOM_conserve.nc')
+
+    args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
+            '--dest_grid', mom_hgrid, '--dest_mask', mom_mask,
+            '--method', 'conserve', '--output', weights]
+    ret = sp.call(cmd + args)
+    assert ret == 0
+    assert os.path.exists(weights)
+
+    # Only use these to pull out the dimensions of the grids.
+    mom = MomGrid.fromfile(mom_hgrid, mask_file=mom_mask)
+    core2 = Core2Grid(core2_hgrid)
+
+    src = np.empty_like(core2.x_t)
+    for i in range(src.shape[0]):
+        src[i, :] = i
+
+    dest = remap(src, weights, core2, mom)
+    return src, dest, weights
 
 
 class TestRemap():
@@ -87,6 +122,7 @@ class TestRemap():
         ret = sp.call(cmd + args)
         assert ret == 0
 
+
     def test_mom_to_mom_remapping(self, input_dir, output_dir):
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
@@ -106,39 +142,57 @@ class TestRemap():
         # Only use these to pull out the dimensions of the grids.
         mom = MomGrid.fromfile(mom_hgrid, mask_file=mom_mask)
 
-        check_remapping_weights(output, mom, mom)
+        src = np.empty_like(mom.x_t)
+        for i in range(src.shape[0]):
+            src[i, :] = i
+
+        remap(src, output, mom, mom)
 
     @pytest.mark.fast
     def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
 
-        my_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
-
-        mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
-        mom_mask = os.path.join(input_dir, 'grid_spec.nc')
-
-        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
-
-        output = os.path.join(output_dir, 'CORE2_MOM_bilinear.nc')
-
-        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
-                '--dest_grid', mom_hgrid, '--dest_mask', mom_mask, 
-		'--output', output]
-        ret = sp.call(cmd + args)
-        assert ret == 0
-        assert os.path.exists(output)
-
-        # Only use these to pull out the dimensions of the grids.
-        mom = MomGrid.fromfile(mom_hgrid, mask_file=mom_mask)
-        core2 = Core2Grid(core2_hgrid)
-
-        src, dest = check_remapping_weights(output, core2, mom)
+        src, dest, weights = remap_core2_to_mom(input_dir, output_dir)
 
         # Write out remapped files.
-        for name, data in [('src_field', src), ('dest_field', dest)]:
+        for name, data in [('esmf_src_field', src), ('esmf_dest_field', dest)]:
             with nc.Dataset(os.path.join(output_dir, name + '.nc'), 'w') as f:
                 f.createDimension('ny', data.shape[0])
                 f.createDimension('nx', data.shape[1])
 
                 var = f.createVariable(name, 'f8', ('ny','nx'))
                 var[:] = data[:]
+
+        src_file = os.path.join(output_dir, 'esmf_src_field.nc')
+        dest_file = os.path.join(output_dir, 'esmf_dest_field.nc')
+
+        src_tot, dest_tot = calc_regridding_err(weights,
+                                                src_file, 'esmf_src_field',
+                                                dest_file, 'esmf_dest_field')
+        print('ESMF src_total {}'.format(src_tot))
+        print('ESMF dest_total {}'.format(src_tot))
+        assert np.allclose(src_tot, dest_tot, rtol=1e-15)
+
+
+    @pytest.mark.areas
+    def test_compare_areas(self, input_dir, output_dir):
+        """
+        Compare areas for CORE2 and MOM with those calculated by ESMF
+        remapping.
+        """
+        pass
+
+        _, _, weights = remap_core2_to_mom(input_dir, output_dir)
+
+        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
+        core2 = Core2Grid(core2_hgrid)
+
+        with nc.Dataset(weights) as f:
+            area_t = f.variables['area_a'][:].reshape(core2.num_lat_points,
+                                                      core2.num_lon_points)
+            frac = f.variables['frac_a'][:].reshape(core2.num_lat_points,
+                                                    core2.num_lon_points)
+        area_t[:, :] = area_t[:, :]*EARTH_RADIUS**2
+
+        assert np.allclose(core2.area_t,  area_t, rtol=1e-3)
+        assert np.allclose(np.sum(core2.area_t), EARTH_AREA, rtol=1e-3)
+        assert np.sum(area_t) == EARTH_AREA
