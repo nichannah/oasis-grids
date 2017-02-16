@@ -34,7 +34,7 @@ def create_regrid_weights(src_grid, dest_grid, method='conserve',
     mpirun = []
     if sh.which('mpirun') is not None:
         import multiprocessing as mp
-        mpirun = ['mpirun', '-np', str(mp.cpu_count())]
+        mpirun = ['mpirun', '-np', str(mp.cpu_count() // 2)]
     try:
         cmd = mpirun + ['ESMF_RegridWeightGen',
                         '-s', src_grid_scrip,
