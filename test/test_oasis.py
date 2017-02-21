@@ -22,12 +22,23 @@ class TestOasis():
         test_dir = os.path.dirname(os.path.realpath(__file__))
         return os.path.join(test_dir, 'oasis')
 
-    def test_build(self, oasis_dir):
+    @pytest.fixture
+    def oasis3mct_dir(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        return os.path.join(test_dir, 'oasis', 'oasis3-mct')
+
+    def test_build(self, oasis_dir, oasis3mct_dir):
         """
         Build example Fortran code.
         """
 
+        # First build oasis3-mct library.
+        ret = sp.call(['make', '-C', oasis3mct_dir, 'ubuntu'])
+        assert ret == 0
+
+        # Build Fortran test code.
         ret = sp.call(['make', '-C', oasis_dir, 'clean'])
+        assert ret == 0
         ret = sp.call(['make', '-C', oasis_dir])
         assert ret == 0
 
