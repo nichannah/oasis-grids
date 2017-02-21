@@ -17,7 +17,7 @@ test/oasis/nout.000000
 test/oasis/overlap.dat
 test/oasis/*.nc
 
-PET0.RegridWeightGen.Log
+PET*.RegridWeightGen.Log
 contrib/PET0.RegridWeightGen.Log
 contrib/bin/
 contrib/esmf/

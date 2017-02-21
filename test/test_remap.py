@@ -1,6 +1,7 @@
 
 import pytest
 import sys, os
+import time
 import subprocess as sp
 import numpy as np
 import numba
@@ -128,7 +129,7 @@ class TestRemap():
         assert os.path.exists(weights)
 
     @pytest.mark.big_ram
-    def test_core2_to_mom_tenth_remapping(self, input_dir):
+    def test_core2_to_mom_tenth_remapping(self, input_dir, output_dir):
         """
         Do a test remapping between core2 and MOM 0.1 grid. This is a superset
         of the test above.
@@ -139,14 +140,7 @@ class TestRemap():
 
         src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
                                                 mom_hgrid, mom_mask)
-
-        rel_err = abs(src_tot - dest_tot) / dest_tot
-
-        print('ESMF src_total {}'.format(src_tot))
-        print('ESMF dest_total {}'.format(src_tot))
-        print('ESMF relative error {}'.format(rel_err))
-
-        assert np.allclose(src_tot, dest_tot, rtol=1e-15)
+        # FIXME: add asserts here.
 
 
     def test_mom_to_mom_remapping(self, input_dir, output_dir):
@@ -180,8 +174,10 @@ class TestRemap():
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mom_mask = os.path.join(input_dir, 'grid_spec.nc')
 
+        t0 = time.time()
         src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
                                                 mom_hgrid, mom_mask)
+        t1 = time.time()
 
         # Write out remapped files.
         for name, data in [('esmf_src_field', src), ('esmf_dest_field', dest)]:
@@ -203,6 +199,7 @@ class TestRemap():
         print('ESMF src_total {}'.format(src_tot))
         print('ESMF dest_total {}'.format(src_tot))
         print('ESMF relative error {}'.format(rel_err))
+        print('ESMF time to make weights and remap one field {}'.format(t1-t0))
 
         assert np.allclose(src_tot, dest_tot, rtol=1e-15)
 

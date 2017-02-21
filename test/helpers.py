@@ -10,7 +10,7 @@ test_dir = os.path.dirname(os.path.realpath(__file__))
 test_data_dir = os.path.join(test_dir, 'test_data')
 
 def setup_test_input_dir():
-    data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/oasis-grids/test/test_data.tar.gz'
+    data_tarball_url = 'http://s3-ap-southeast-2.amazonaws.com/dp-drop/esmgrids/test/test_data.tar.gz'
     test_data_tarball = os.path.join(test_dir, 'test_data.tar.gz')
 
     if not os.path.exists(test_data_dir):

@@ -1,5 +1,6 @@
 import pytest
 import sys, os
+import time
 import shlex
 import glob
 import numpy as np
@@ -87,7 +88,9 @@ class TestOasis():
         os.chdir(oasis_dir)
 
         cmd = 'mpirun -np 1 model_src : -np 1 model_dest'
+        t0 = time.time()
         ret = sp.call(shlex.split(cmd))
+        t1 = time.time()
         assert ret == 0
 
         os.chdir(cur_dir)
@@ -105,6 +108,7 @@ class TestOasis():
         print('OASIS src_total {}'.format(src_tot))
         print('OASIS dest_total {}'.format(dest_tot))
         print('OASIS relative error {}'.format(rel_err))
+        print('OASIS time to make weights and remap one field {}'.format(t1-t0))
 
         assert np.allclose(src_tot, dest_tot, rtol=1e-9)
 
