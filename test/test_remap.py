@@ -33,18 +33,12 @@ def apply_weights(src, dest_shape, n_s, n_b, row, col, s):
     return dest.reshape(dest_shape)
 
 
-def remap(src_data, weights, src_grid, dest_grid):
+def remap(src_data, weights, dest_shape):
     """
     Regrid a 2d field and see how it looks.
     """
 
-    src_lats = src_grid.num_lat_points
-    src_lons = src_grid.num_lon_points
-    dest_lats = dest_grid.num_lat_points
-    dest_lons = dest_grid.num_lon_points
-
-    src_data = np.ndarray((src_lats, src_lons))
-    dest_data = np.ndarray((dest_lats, dest_lons))
+    dest_data = np.ndarray(dest_shape)
 
     for i in range(src_lats):
         src_data[i, :] = i
@@ -58,13 +52,6 @@ def remap(src_data, weights, src_grid, dest_grid):
 
     dest_data[:, :] = apply_weights(src_data[:, :], dest_data.shape,
                                        n_s, n_b, row, col, s)
-    # compare src_data and dest_data
-    if src_data.shape == dest_data.shape:
-        np.allclose(dest_data, src_data)
-
-    # Do a random sample: grab a couple of points at random on the
-    # destination grid, find corrosponding point on the src grid and
-    # compare.
 
     return dest_data
 
@@ -92,8 +79,38 @@ def remap_core2_to_mom(input_dir, output_dir, mom_hgrid, mom_mask):
     for i in range(src.shape[0]):
         src[i, :] = i
 
-    dest = remap(src, weights, core2, mom)
+    dest = remap(src, weights, (mom.num_lat_points, mom.num_lon_points))
     return src, dest, weights
+
+
+def remap_mom_one_to_mom_tenth(input_dir, output_dir, src_field):
+    """
+    Remap MOM one degree to MOM tenth.
+
+    This is used to remap OASIS and CICE restarts.
+    """
+
+    my_dir = os.path.dirname(os.path.realpath(__file__))
+
+    one_hgrid = os.path.join(input_dir, 'grid_spec.nc')
+    one_mask = os.path.join(input_dir, 'grid_spec.nc')
+    tenth_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
+    tenth_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
+
+    weights = os.path.join(output_dir, 'MOM1_MOM10th_conserve.nc')
+
+    cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
+    args = ['MOM', 'MOM', '--src_grid', one_hgrid,
+            '--dest_grid', tenth_hgrid, '--dest_mask', tenth_mask,
+            '--method', 'conserve', '--output', weights]
+    ret = sp.call(cmd + args)
+    assert ret == 0
+    assert os.path.exists(weights)
+
+    dest_field = remap(src_field, weights,
+                       (mom.num_lat_points, mom.num_lon_points))
+
+    return dest_field
 
 
 class TestRemap():
@@ -105,6 +122,22 @@ class TestRemap():
     @pytest.fixture
     def output_dir(self):
         return setup_test_output_dir()
+
+    def test_remap_restarts(self, input_dir, output_dir):
+
+        files = ['i2a.nc', 'i2o.nc', 'o2i.nc', 'u_star.nc']
+        restarts = map(os.path.join, [output_dir]*len(files), files)
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
+        mom = MomGrid.fromfile(mom_hgrid)
+
+        # FIXME unfinished code.
+        with nc.Dataset(os.path.join(output_dir, name + '.nc'), 'w') as f:
+            f.createDimension('ny', data.shape[0])
+            f.createDimension('nx', data.shape[1])
+
+            var = f.createVariable(name, 'f8', ('ny','nx'))
+            var[:] = data[:]
 
     @pytest.mark.accessom_tenth
     @pytest.mark.big_ram
@@ -143,7 +176,10 @@ class TestRemap():
         # FIXME: add asserts here.
 
 
-    def test_mom_to_mom_remapping(self, input_dir, output_dir):
+    def test_identical_remapping(self, input_dir, output_dir):
+        """
+        Remap between two identical grids
+        """
 
         my_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
@@ -151,7 +187,7 @@ class TestRemap():
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mom_mask = os.path.join(input_dir, 'grid_spec.nc')
 
-        output = os.path.join(output_dir, 'MOM_MOM_bilinear.nc')
+        output = os.path.join(output_dir, 'MOM_MOM_conserve.nc')
 
         args = ['MOM', 'MOM', '--src_grid', mom_hgrid,
                 '--dest_grid', mom_hgrid, '--output', output]
@@ -166,7 +202,7 @@ class TestRemap():
         for i in range(src.shape[0]):
             src[i, :] = i
 
-        remap(src, output, mom, mom)
+        remap(src, output, src.shape)
 
     @pytest.mark.conservation
     def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
