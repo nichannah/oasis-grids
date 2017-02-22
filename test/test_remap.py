@@ -83,7 +83,7 @@ def remap_core2_to_mom(input_dir, output_dir, mom_hgrid, mom_mask):
     return src, dest, weights
 
 
-def remap_mom_one_to_mom_tenth(input_dir, output_dir, src_field):
+def remap_mom_one_to_tenth(input_dir, output_dir, src_field):
     """
     Remap MOM one degree to MOM tenth.
 
@@ -123,21 +123,32 @@ class TestRemap():
     def output_dir(self):
         return setup_test_output_dir()
 
+    @pytest.mark.restarts
     def test_remap_restarts(self, input_dir, output_dir):
 
         files = ['i2a.nc', 'i2o.nc', 'o2i.nc', 'u_star.nc']
-        restarts = map(os.path.join, [output_dir]*len(files), files)
 
         mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
         mom = MomGrid.fromfile(mom_hgrid)
 
-        # FIXME unfinished code.
-        with nc.Dataset(os.path.join(output_dir, name + '.nc'), 'w') as f:
-            f.createDimension('ny', data.shape[0])
-            f.createDimension('nx', data.shape[1])
+        for fname in files:
+            with nc.Dataset(os.path.join(output_dir, fname), 'w') as fd:
+                with nc.Dataset(os.path.join(input_dir, fname), 'r') as fs:
 
-            var = f.createVariable(name, 'f8', ('ny','nx'))
-            var[:] = data[:]
+                    assert 'ny' in fs.dimensions
+                    assert 'nx' in fs.dimensions
+
+                    fd.createDimension('ny', mom.num_lat_points)
+                    fd.createDimension('nx', mom.num_lon_points)
+
+                    for vname in fs.variables:
+                        vd = fd.createVariable(vname, 'f8', ('ny','nx'))
+
+                        vd[:] = remap_mom_one_to_tenth(input_dir, output_dir,
+                                                       fs.variables[vname][:])
+
+        for fname in files:
+            assert os.path.exists(os.path.join(output_dir, fname))
 
     @pytest.mark.accessom_tenth
     @pytest.mark.big_ram
