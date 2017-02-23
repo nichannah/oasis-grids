@@ -98,15 +98,14 @@ class TestOasis():
         # Look at the output of the field.
         weights = os.path.join(oasis_dir,
                                'rmp_cort_to_momt_CONSERV_FRACNNEI.nc')
-        src_file = os.path.join(oasis_dir, 'src_field.nc')
-        dest_file = os.path.join(oasis_dir, 'dest_field.nc')
 
-        src_tot, dest_tot = calc_regridding_err(weights, src_file,
-                                                'Array', dest_file, 'Array')
-        rel_err = abs(src_tot - dest_tot) / dest_tot
+        with nc.Dataset(os.path.join(oasis_dir, 'src_field.nc')) as f:
+            src = f.variables['Array'][:]
+        with nc.Dataset(os.path.join(oasis_dir, 'dest_field.nc')) as f:
+            dest = f.variables['Array'][:]
 
-        print('OASIS src_total {}'.format(src_tot))
-        print('OASIS dest_total {}'.format(dest_tot))
+        rel_err = calc_regridding_err(weights, src, dest)
+
         print('OASIS relative error {}'.format(rel_err))
         print('OASIS time to make weights and remap one field {}'.format(t1-t0))
 

@@ -150,42 +150,6 @@ class TestRemap():
         for fname in files:
             assert os.path.exists(os.path.join(output_dir, fname))
 
-    @pytest.mark.accessom_tenth
-    @pytest.mark.big_ram
-    def test_core2_to_mom_tenth_weights(self, input_dir, output_dir):
-        """
-        Generate weights for core2 to MOM 0.1 remapping.
-        """
-
-        mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
-        mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
-        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
-
-        weights = os.path.join(output_dir, 'CORE2_MOM01_conserve.nc')
-
-        my_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
-        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
-                '--dest_grid', mom_hgrid, '--dest_mask', mom_mask,
-                '--method', 'conserve', '--output', weights]
-        ret = sp.call(cmd + args)
-        assert ret == 0
-        assert os.path.exists(weights)
-
-    @pytest.mark.big_ram
-    def test_core2_to_mom_tenth_remapping(self, input_dir, output_dir):
-        """
-        Do a test remapping between core2 and MOM 0.1 grid. This is a superset
-        of the test above.
-        """
-
-        mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
-        mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
-
-        src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
-                                                mom_hgrid, mom_mask)
-        # FIXME: add asserts here.
-
 
     def test_identical_remapping(self, input_dir, output_dir):
         """
@@ -215,6 +179,28 @@ class TestRemap():
 
         remap(src, output, src.shape)
 
+    @pytest.mark.big_ram
+    @pytest.mark.conservation
+    def test_core2_to_mom_tenth_remapping(self, input_dir, output_dir):
+        """
+        Do a test remapping between core2 and MOM 0.1 grid. 
+        """
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
+
+        t0 = time.time()
+        src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
+                                                mom_hgrid, mom_mask)
+        t1 = time.time()
+        rel_err = calc_regridding_err(weights, src, dest)
+
+        print('ESMF relative error {}'.format(rel_err))
+        print('ESMF time to make 0.1 degree weights and remap {}'.format(t1-t0))
+
+        assert rel_err < 1e-15
+
+
     @pytest.mark.conservation
     def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
 
@@ -225,30 +211,12 @@ class TestRemap():
         src, dest, weights = remap_core2_to_mom(input_dir, output_dir,
                                                 mom_hgrid, mom_mask)
         t1 = time.time()
+        rel_err = calc_regridding_err(weights, src, dest)
 
-        # Write out remapped files.
-        for name, data in [('esmf_src_field', src), ('esmf_dest_field', dest)]:
-            with nc.Dataset(os.path.join(output_dir, name + '.nc'), 'w') as f:
-                f.createDimension('ny', data.shape[0])
-                f.createDimension('nx', data.shape[1])
-
-                var = f.createVariable(name, 'f8', ('ny','nx'))
-                var[:] = data[:]
-
-        src_file = os.path.join(output_dir, 'esmf_src_field.nc')
-        dest_file = os.path.join(output_dir, 'esmf_dest_field.nc')
-
-        src_tot, dest_tot = calc_regridding_err(weights,
-                                                src_file, 'esmf_src_field',
-                                                dest_file, 'esmf_dest_field')
-        rel_err = abs(src_tot - dest_tot) / dest_tot
-
-        print('ESMF src_total {}'.format(src_tot))
-        print('ESMF dest_total {}'.format(src_tot))
         print('ESMF relative error {}'.format(rel_err))
-        print('ESMF time to make weights and remap one field {}'.format(t1-t0))
+        print('ESMF time to make 1 degree weights and remap {}'.format(t1-t0))
 
-        assert np.allclose(src_tot, dest_tot, rtol=1e-15)
+        assert rel_err < 1e-15
 
 
     @pytest.mark.areas

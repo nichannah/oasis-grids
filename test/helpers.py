@@ -30,15 +30,10 @@ def setup_test_output_dir():
             pass
     return output_dir
 
-def calc_regridding_err(weights, src_file, src_field, dest_file, dest_field):
+def calc_regridding_err(weights, src, dest):
     """
     Calculate the regirdding error.
     """
-
-    with nc.Dataset(src_file) as f:
-        src = f.variables[src_field][:]
-    with nc.Dataset(dest_file) as f:
-        dest = f.variables[dest_field][:]
 
     with nc.Dataset(weights) as f:
         try:
@@ -69,7 +64,8 @@ def calc_regridding_err(weights, src_file, src_field, dest_file, dest_field):
 
     # Calculation of totals here.
     # http://www.earthsystemmodeling.org/esmf_releases/non_public/ESMF_5_3_0/ESMC_crefdoc/node3.html
-    src_total = np.sum(src[:, :] * area_a[:, :] * frac_a[:, :])
-    dest_total = np.sum(dest[:, :] * area_b[:, :])
+    src_tot = np.sum(src[:, :] * area_a[:, :] * frac_a[:, :])
+    dest_tot = np.sum(dest[:, :] * area_b[:, :])
+    rel_err = abs(src_tot - dest_tot) / dest_tot
 
-    return src_total, dest_total
+    return rel_err
