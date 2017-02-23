@@ -40,9 +40,6 @@ def remap(src_data, weights, dest_shape):
 
     dest_data = np.ndarray(dest_shape)
 
-    for i in range(src_lats):
-        src_data[i, :] = i
-
     with nc.Dataset(weights) as wf:
         n_s = wf.dimensions['n_s'].size
         n_b = wf.dimensions['n_b'].size
@@ -83,7 +80,7 @@ def remap_core2_to_mom(input_dir, output_dir, mom_hgrid, mom_mask):
     return src, dest, weights
 
 
-def remap_mom_one_to_tenth(input_dir, output_dir, src_field):
+def remap_to_tenth(input_dir, output_dir, src_field, weights=None):
     """
     Remap MOM one degree to MOM tenth.
 
@@ -91,26 +88,30 @@ def remap_mom_one_to_tenth(input_dir, output_dir, src_field):
     """
 
     my_dir = os.path.dirname(os.path.realpath(__file__))
-
-    one_hgrid = os.path.join(input_dir, 'grid_spec.nc')
-    one_mask = os.path.join(input_dir, 'grid_spec.nc')
     tenth_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
-    tenth_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
 
-    weights = os.path.join(output_dir, 'MOM1_MOM10th_conserve.nc')
+    if weights is None:
+        quarter_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        quarter_mask = os.path.join(input_dir, 'ocean_mask.nc')
+        tenth_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
 
-    cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
-    args = ['MOM', 'MOM', '--src_grid', one_hgrid,
-            '--dest_grid', tenth_hgrid, '--dest_mask', tenth_mask,
-            '--method', 'conserve', '--output', weights]
-    ret = sp.call(cmd + args)
-    assert ret == 0
+        weights = os.path.join(output_dir, 'MOM1_MOM10th_conserve.nc')
+        cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
+        args = ['MOM', 'MOM', '--src_grid', quarter_hgrid,
+                '--dest_grid', tenth_hgrid, '--dest_mask', tenth_mask,
+                '--method', 'conserve', '--output', weights]
+        ret = sp.call(cmd + args)
+        assert ret == 0
+
     assert os.path.exists(weights)
+
+    # Only use these to pull out the dimensions of the grids.
+    mom = MomGrid.fromfile(tenth_hgrid)
 
     dest_field = remap(src_field, weights,
                        (mom.num_lat_points, mom.num_lon_points))
 
-    return dest_field
+    return dest_field, weights
 
 
 class TestRemap():
@@ -124,13 +125,15 @@ class TestRemap():
         return setup_test_output_dir()
 
     @pytest.mark.restarts
+    @pytest.mark.big_ram
     def test_remap_restarts(self, input_dir, output_dir):
 
-        files = ['i2a.nc', 'i2o.nc', 'o2i.nc', 'u_star.nc']
+        files = ['i2o.nc', 'i2a.nc', 'o2i.nc', 'u_star.nc']
 
         mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
         mom = MomGrid.fromfile(mom_hgrid)
 
+        weights = None
         for fname in files:
             with nc.Dataset(os.path.join(output_dir, fname), 'w') as fd:
                 with nc.Dataset(os.path.join(input_dir, fname), 'r') as fs:
@@ -142,10 +145,19 @@ class TestRemap():
                     fd.createDimension('nx', mom.num_lon_points)
 
                     for vname in fs.variables:
+                        if vname == 'time':
+                            continue
+
                         vd = fd.createVariable(vname, 'f8', ('ny','nx'))
 
-                        vd[:] = remap_mom_one_to_tenth(input_dir, output_dir,
-                                                       fs.variables[vname][:])
+                        if len(fs.variables[vname].shape) == 3:
+                            src = fs.variables[vname][0, :, :]
+                        else:
+                            src = fs.variables[vname][:, :]
+
+                        vd[:], weights = remap_to_tenth(input_dir, output_dir,
+                                                        fs.variables[vname][:],
+                                                        weights)
 
         for fname in files:
             assert os.path.exists(os.path.join(output_dir, fname))
