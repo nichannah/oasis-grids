@@ -210,7 +210,7 @@ class TestRemap():
         print('ESMF relative error {}'.format(rel_err))
         print('ESMF time to make 0.1 degree weights and remap {}'.format(t1-t0))
 
-        assert rel_err < 1e-15
+        assert rel_err < 1e-13
 
 
     @pytest.mark.conservation
