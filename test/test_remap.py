@@ -79,7 +79,6 @@ def remap_core2_to_mom(input_dir, output_dir, mom_hgrid, mom_mask):
     dest = remap(src, weights, (mom.num_lat_points, mom.num_lon_points))
     return src, dest, weights
 
-
 def remap_to_tenth(input_dir, output_dir, src_field, weights=None):
     """
     Remap MOM one degree to MOM tenth.
@@ -161,6 +160,51 @@ class TestRemap():
 
         for fname in files:
             assert os.path.exists(os.path.join(output_dir, fname))
+
+    @pytest.mark.accessom
+    def test_accessom_tenth_weights(self, input_dir, output_dir):
+        """
+        Create all weights needed for ACCESS-OM tenth. OASIS calls these:
+
+        rmp_cice_to_nt62_CONSERV_FRACNNEI.nc,
+        rmp_nt62_to_cice_CONSERV_FRACNNEI.nc,
+        rmp_nt62_to_cice_DISTWGT.nc
+        """
+
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
+        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
+
+        nt62_to_cice = os.path.join(output_dir, 'rmp_nt62_to_cice_CONSERV.nc')
+        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
+                '--dest_grid', mom_hgrid,
+                '--method', 'conserve', '--output', nt62_to_cice,
+                '--output_convention', 'SCRIP']
+        ret = sp.call(cmd + args)
+        assert ret == 0
+        assert os.path.exists(nt62_to_cice)
+
+        nt62_to_cice_dist = os.path.join(output_dir, 'rmp_nt62_to_cice_DISTWGT.nc')
+        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
+                '--dest_grid', mom_hgrid,
+                '--method', 'neareststod', '--output', nt62_to_cice_dist,
+                '--output_convention', 'SCRIP']
+        ret = sp.call(cmd + args)
+        assert ret == 0
+        assert os.path.exists(nt62_to_cice_dist)
+
+        cice_to_nt62 = os.path.join(output_dir, 'rmp_cice_to_nt62_CONSERV.nc')
+        args = ['MOM', 'CORE2', '--src_grid', mom_hgrid,
+                '--src_mask', mom_mask, '--dest_grid', core2_hgrid,
+                '--method', 'conserve', '--ignore_unmapped',
+                '--output', cice_to_nt62,
+                '--output_convention', 'SCRIP']
+        ret = sp.call(cmd + args)
+        assert ret == 0
+        assert os.path.exists(cice_to_nt62)
 
 
     def test_identical_remapping(self, input_dir, output_dir):
