@@ -17,14 +17,19 @@ from grid_factory import factory
 def convert_to_scrip_output(weights):
 
     _, new_weights = tempfile.mkstemp(suffix='.nc')
+    # FIXME: So that ncrename doesn't prompt for overwrite.
+    os.remove(new_weights)
 
     cmd = 'ncrename -d n_a,src_grid_size -d n_b,dst_grid_size -d n_s,num_links -d nv_a,src_grid_corners -d nv_b,dst_grid_corners -v yc_a,src_grid_center_lat -v yc_b,dst_grid_center_lat -v xc_a,src_grid_center_lon -v xc_b,dst_grid_center_lon -v yv_a,src_grid_corner_lat -v xv_a,src_grid_corner_lon -v yv_b,dst_grid_corner_lat -v xv_b,dst_grid_corner_lon -v mask_a,src_grid_imask -v mask_b,dst_grid_imask -v area_a,src_grid_area -v area_b,dst_grid_area -v frac_a,src_grid_frac -v frac_b,dst_grid_frac -v col,src_address -v row,dst_address {} {}'.format(weights, new_weights)
 
-    sp.check_output(shlix.split(cmd))
+    try:
+        sp.check_output(shlex.split(cmd))
+    except sp.CalledProcessError as e:
+        print(e.output, file=sys.stderr)
 
     # Fix the dimension of the remap_matrix.
     with nc.Dataset(weights) as f_old, nc.Dataset(new_weights, 'r+') as f_new:
-        remap_matrix = f_new.creatVariable('remap_matrix', 'f8', ('num_links', 'num_wgts'))
+        remap_matrix = f_new.createVariable('remap_matrix', 'f8', ('num_links', 'num_wgts'))
         remap_matrix[:, 0] = f_old.variables['S'][:]
 
     os.remove(weights)
