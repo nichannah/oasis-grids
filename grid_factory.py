@@ -1,7 +1,9 @@
 
 import sys
+import os
 
-sys.path.append('./esmgrids')
+my_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(my_dir, './esmgrids'))
 from esmgrids.mom_grid import MomGrid
 from esmgrids.cice_grid import CiceGrid
 from esmgrids.nemo_grid import NemoGrid

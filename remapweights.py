@@ -11,7 +11,6 @@ import numba
 import tempfile
 import subprocess as sp
 
-sys.path.append('./esmgrids')
 from grid_factory import factory
 
 def convert_to_scrip_output(weights):
@@ -65,8 +64,14 @@ def create_weights(src_grid, dest_grid, method='conserve',
     if sh.which('mpirun') is not None:
         import multiprocessing as mp
         mpirun = ['mpirun', '-np', str(mp.cpu_count() // 2)]
+
+    my_dir = os.path.dirname(os.path.realpath(__file__))
+    esmf = os.path.join(my_dir, 'contrib', 'bin', 'ESMF_RegridWeightGen')
+    if not os.path.exists(esmf):
+        esmf = 'ESMF_RegridWeightGen'
+
     try:
-        cmd = mpirun + ['ESMF_RegridWeightGen',
+        cmd = mpirun + [esmf] + [
                         '-s', src_grid_scrip,
                         '-d', dest_grid_scrip, '-m', method,
                         '-w', regrid_weights] + ignore_unmapped
