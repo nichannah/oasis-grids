@@ -1,8 +1,11 @@
+
+namcouple = \
+"""\
  $NFIELDS
              1
  $END
  $NBMODEL
-   2  atmxxx icexxx
+   2  {src_model} {dest_model}
  $END
  $RUNTIME
   21600
@@ -12,10 +15,11 @@
  $END
  $STRINGS
 src_field dest_field 1 7200  3 rst.nc EXPORTED
-192 94 1440 1080 atmt icet
+{src_x} {src_y} {dest_x} {dest_y} {src_grid} {dest_grid}
 P  0  P  0
 LOCTRANS MAPPING SCRIPR
 INSTANT
-rmp_atmt_to_icet_CONSERVE.nc src
+rmp_{src_grid}_to_{dest_grid}_CONSERVE.nc src
 CONSERV LR SCALAR LATLON 10 FRACNNEI FIRST
  $END
+"""

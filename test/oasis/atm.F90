@@ -1,5 +1,5 @@
 
-program model_src
+program atm
 
 use coupler, only : coupler_init, coupler_init_done, coupler_add_field, &
                     coupler_destroy_field, coupler_put, coupler_close, &
@@ -8,30 +8,37 @@ use coupler, only : coupler_init, coupler_init_done, coupler_add_field, &
 implicit none
 
     type(couple_field_type), dimension(:), allocatable :: fields
-    integer :: i, j, counter
+    integer :: i, j, t, timestep
+    logical :: debug
+
+    debug = .false.
+    timestep = 1
 
     ! Initialise the coupler.
-    call coupler_init('srcxxx', 192, 94, 1, 1)
-
-    allocate(fields(1))
+    call coupler_init('atmxxx', 192, 94, 1, 1)
 
     ! Create/add the coupling field.
+    allocate(fields(1))
     call coupler_add_field(fields(1), 'src_field', COUPLER_OUT)
     call coupler_init_done()
 
     ! Initialise the field.
-    counter = 0
     do j=1, size(fields(1)%field, 2)
       do i=1, size(fields(1)%field, 1)
         fields(1)%field(i, j) = j
       enddo
     enddo
+    if (debug) then
+      call coupler_dump_field(fields(1), 'src_field.nc')
+    endif
 
-    call coupler_dump_field(fields(1), 'src_field.nc')
-
-    call coupler_put(0, fields)
+    do t=1,10
+      call coupler_put(timestep*t, fields)
+    enddo
 
     call coupler_destroy_field(fields(1))
     call coupler_close()
 
-end program model_src
+    deallocate(fields)
+
+end program atm
