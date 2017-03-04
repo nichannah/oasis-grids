@@ -24,7 +24,16 @@ implicit none
     call coupler_init_done()
 
     ! Get fields from coupler and write out.
-    do t=1,10
+    do t=1,100
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
+      call coupler_get(timestep*t, fields)
       call coupler_get(timestep*t, fields)
     enddo
 

@@ -32,7 +32,17 @@ implicit none
       call coupler_dump_field(fields(1), 'src_field.nc')
     endif
 
-    do t=1,10
+    do t=1,100
+      print*, 'Timestep: ', t
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
+      call coupler_put(timestep*t, fields)
       call coupler_put(timestep*t, fields)
     enddo
 
