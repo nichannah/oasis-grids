@@ -14,7 +14,7 @@ namcouple = \
   1
  $END
  $STRINGS
-src_field dest_field 1 7200  3 rst.nc EXPORTED
+src_field dest_field 1 1  3 rst.nc EXPORTED
 {src_x} {src_y} {dest_x} {dest_y} {src_grid} {dest_grid}
 P  0  P  0
 LOCTRANS MAPPING SCRIPR

@@ -26,15 +26,9 @@ implicit none
     ! Get fields from coupler and write out.
     do t=1,100
       call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
-      call coupler_get(timestep*t, fields)
+      if (maxval(fields(1)%field) /= t) then
+        stop 'Bad coupling field'
+      endif
     enddo
 
     if (debug) then

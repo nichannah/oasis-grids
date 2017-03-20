@@ -22,27 +22,12 @@ implicit none
     call coupler_add_field(fields(1), 'src_field', COUPLER_OUT)
     call coupler_init_done()
 
-    ! Initialise the field.
-    do j=1, size(fields(1)%field, 2)
-      do i=1, size(fields(1)%field, 1)
-        fields(1)%field(i, j) = j
-      enddo
-    enddo
     if (debug) then
       call coupler_dump_field(fields(1), 'src_field.nc')
     endif
 
     do t=1,100
-      print*, 'Timestep: ', t
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
-      call coupler_put(timestep*t, fields)
+      fields(1)%field(:, :) = t
       call coupler_put(timestep*t, fields)
     enddo
 
