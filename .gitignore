@@ -16,6 +16,8 @@ test/oasis/debug.root.02
 test/oasis/nout.000000
 test/oasis/overlap.dat
 test/oasis/*.nc
+test/oasis/*.exe
+test/oasis/namcouple*
 
 PET*.RegridWeightGen.Log
 contrib/PET0.RegridWeightGen.Log
