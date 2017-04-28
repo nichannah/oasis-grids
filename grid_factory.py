@@ -37,7 +37,7 @@ def factory(model_name, model_hgrid, model_mask, model_rows=None, model_cols=Non
     elif model_name == 'CORE2':
         model_grid = Core2Grid(model_hgrid)
     elif model_name == 'JRA55':
-        model_grid = Jra55Grid()
+        model_grid = Jra55Grid(model_hgrid)
     else:
         assert False
 
