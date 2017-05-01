@@ -79,7 +79,7 @@ def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, core2_or_jra=
         atm_hgrid = os.path.join(input_dir, 't_10.0001.nc')
         atm_grid = Core2Grid(atm_hgrid)
     elif core2_or_jra == 'JRA55':
-        atm_hgrid = os.path.join(input_dir, 'tas_6hrPlev_JRA55_1958010100_1958123118.nc')
+        atm_hgrid = os.path.join(input_dir, 't_10.1984.30Jun2016.nc')
         atm_grid = Jra55Grid(atm_hgrid)
     else:
         assert False
@@ -109,7 +109,7 @@ def create_weights_mom_to_jra55(mom_hgrid, mom_mask, input_dir, output_dir):
     my_dir = os.path.dirname(os.path.realpath(__file__))
     cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
 
-    jra55_hgrid = os.path.join(input_dir, 'tas_6hrPlev_JRA55_1958010100_1958123118.nc')
+    jra55_hgrid = os.path.join(input_dir, 't_10.1984.30Jun2016.nc')
 
     jra55_to_cice = os.path.join(output_dir, 'rmp_jrat_to_cict_CONSERV.nc')
     args = ['JRA55', 'MOM', '--src_grid', jra55_hgrid,
@@ -185,7 +185,7 @@ def remap_core2_to_jra55(input_dir, output_dir, src_field, weights=None):
     """
 
     core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
-    jra55_hgrid = os.path.join(input_dir, 'tas_6hrPlev_JRA55_1958010100_1958123118.nc')
+    jra55_hgrid = os.path.join(input_dir, 't_10.1984.30Jun2016.nc')
     jra55 = Jra55Grid(jra55_hgrid)
 
     if weights is None:
@@ -197,6 +197,7 @@ def remap_core2_to_jra55(input_dir, output_dir, src_field, weights=None):
                 '--dest_grid', jra55_hgrid,
                 '--method', 'conserve', '--output', weights]
         ret = sp.call(cmd + args)
+        print('Made weights {}'.format(weights))
         assert ret == 0
 
     assert os.path.exists(weights)
@@ -225,8 +226,7 @@ class TestRemap():
         """
 
         fname = 'a2i.nc'
-        jra55 = Jra55Grid(os.path.join(input_dir,
-                                   'tas_6hrPlev_JRA55_1958010100_1958123118.nc'))
+        jra55 = Jra55Grid(os.path.join(input_dir, 't_10.1984.30Jun2016.nc'))
 
         weights = None
         with nc.Dataset(os.path.join(output_dir, fname), 'w') as fd:
@@ -251,6 +251,7 @@ class TestRemap():
 
                     vd[:], weights = remap_core2_to_jra55(input_dir,
                                             output_dir, src, weights)
+                    print('remapped {}'.format(vname))
 
         assert os.path.exists(os.path.join(output_dir, fname))
 
@@ -358,6 +359,24 @@ class TestRemap():
         mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
 
         create_weights_mom_to_jra55(mom_hgrid, mom_mask, input_dir, output_dir)
+
+    @pytest.mark.accessom
+    @pytest.mark.big_ram
+    @pytest.mark.jra55_quarter
+    def test_accessom_qarter_mom_jra55_weights(self, input_dir, output_dir):
+        """
+        Create all weights needed for ACCESS-OM tenth. OASIS calls these:
+
+        rmp_cict_to_jrat_CONSERV_FRACNNEI.nc,
+        rmp_jrat_to_cict_CONSERV_FRACNNEI.nc,
+        rmp_jrat_to_cict_DISTWGT.nc
+        """
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
+
+        create_weights_mom_to_jra55(mom_hgrid, mom_mask, input_dir, output_dir)
+
 
     @pytest.mark.accessom
     @pytest.mark.jra55_one
