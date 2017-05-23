@@ -70,7 +70,8 @@ def remap(src_data, weights, dest_shape):
 
     return dest_data
 
-def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, core2_or_jra='CORE2'):
+def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, src=None,
+                       method='conserve', core2_or_jra='CORE2'):
 
     my_dir = os.path.dirname(os.path.realpath(__file__))
     cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
@@ -88,7 +89,7 @@ def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, core2_or_jra=
 
     args = [core2_or_jra, 'MOM', '--src_grid', atm_hgrid,
             '--dest_grid', mom_hgrid, '--dest_mask', mom_mask,
-            '--method', 'conserve', '--output', weights]
+            '--method', method, '--output', weights]
     ret = sp.call(cmd + args)
     assert ret == 0
     assert os.path.exists(weights)
@@ -96,9 +97,10 @@ def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, core2_or_jra=
     # Only use these to pull out the dimensions of the grids.
     mom = MomGrid.fromfile(mom_hgrid, mask_file=mom_mask)
 
-    src = np.empty_like(atm_grid.x_t)
-    for i in range(src.shape[0]):
-        src[i, :] = i
+    if src is None:
+        src = np.empty_like(atm_grid.x_t)
+        for i in range(src.shape[0]):
+            src[i, :] = i
 
     dest = remap(src, weights, (mom.num_lat_points, mom.num_lon_points))
     return src, dest, weights
@@ -506,3 +508,29 @@ class TestRemap():
         assert np.allclose(core2.area_t,  area_t, rtol=1e-3)
         assert np.allclose(np.sum(core2.area_t), EARTH_AREA, rtol=1e-3)
         assert np.sum(area_t) == EARTH_AREA
+
+    @pytest.mark.runoff
+    def test_remap_runoff(self, input_dir, output_dir):
+        """
+        Remapping runoff and check that it is conservative.
+
+        It will be necessary to use a destination mask. We want to move all
+        points from src into unmasked parts of the destination.
+        """
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
+
+        filename = os.path.join(input_dir, 'runoff_from_iaf_16MAR2016_jragrid_1984.nc')
+        with nc.Dataset(filename) as f:
+            runoff = f.variables['runof'][0, :]
+
+        src, dest, weights = remap_atm_to_ocean(input_dir, output_dir,
+                                                mom_hgrid, mom_mask,
+                                                src=runoff,
+                                                core2_or_jra='JRA55') 
+
+        rel_err = calc_regridding_err(weights, src, dest)
+        print('ESMF relative error {}'.format(rel_err))
+
+        assert rel_err < 1e-15

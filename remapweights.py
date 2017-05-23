@@ -140,9 +140,13 @@ def main():
     src_grid = factory(args.src_name, args.src_grid, args.src_mask)
     dest_grid = factory(args.dest_name, args.dest_grid, args.dest_mask)
 
+    unmasked_src = args.src_mask is None
+    unmasked_dest = args.dest_mask is None
+
     weights = create_weights(src_grid, dest_grid, method=args.method,
                              ignore_unmapped=args.ignore_unmapped,
-                              unmasked_src=True, unmasked_dest=True)
+                              unmasked_src=unmasked_src,
+                              unmasked_dest=unmasked_dest)
 
     if weights is None:
         return 1
