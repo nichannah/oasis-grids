@@ -1,6 +1,6 @@
 
 F90=mpif90
-FFLAGS=-Wall -g -O0 -I/usr/include -I./oasis3-mct/Linux/build/lib/psmile.MPI1/
+FFLAGS=-Wall -g -O2 -I/usr/include -I./oasis3-mct/Linux/build/lib/psmile.MPI1/
 LDFLAGS=-L./oasis3-mct/Linux/lib/ -L./ -lcoupler -lpsmile.MPI1 -lscrip -lnetcdff -lmct -lmpeu
 
 all: atm.exe land.exe ice.exe ocean.exe

@@ -71,7 +71,7 @@ def remap_to_mom(oasis_dir, input_dir, mom_hgrid, mom_mask):
         # Build models
         build_oasis(oasis_dir)
 
-        runtime = run_oasis(oasis_dir, 'model_src', 'model_dest')
+        runtime = run_oasis(oasis_dir, 'atm.exe', 'ice.exe')
 
         # Look at the output of the field.
         weights = os.path.join(oasis_dir,
@@ -127,6 +127,34 @@ class TestOasis():
 
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mom_mask = os.path.join(input_dir, 'grid_spec.nc')
+
+        src, dest, weights, runtime = remap_to_mom(oasis_dir, input_dir,
+                                                   mom_hgrid, mom_mask)
+        rel_err = calc_regridding_err(weights, src, dest)
+
+        print('OASIS relative error {}'.format(rel_err))
+        print('OASIS time to make weights and remap one field {}'.format(runtime))
+
+        assert rel_err < 1e-9
+
+    @pytest.mark.conservation
+    @pytest.mark.big_ram
+    @pytest.mark.quarter_deg
+    def test_remap_quarter_deg(self, input_dir, oasis_dir):
+        """
+        Use OASIS for a tenth degree remapping.
+        """
+
+        # Delete all netcdf files in oasis dir this will include the OASIS
+        # configuration.
+        for f in glob.glob(oasis_dir + '/*.nc'):
+            try:
+                os.remove(f)
+            except FileNotFoundError as e:
+                pass
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
 
         src, dest, weights, runtime = remap_to_mom(oasis_dir, input_dir,
                                                    mom_hgrid, mom_mask)

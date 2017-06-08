@@ -12,7 +12,7 @@ implicit none
     logical :: debug
     real :: time_start, time_finish
 
-    debug = .false.
+    debug = .true.
     timestep = 1
 
     ! Initialise the coupler.
@@ -25,14 +25,14 @@ implicit none
     call coupler_init_done()
     call cpu_time(time_finish)
 
-    print*, "Startup time: ", time_finish - time_start
+    print*, "Atm startup time: ", time_finish - time_start
 
     call cpu_time(time_start)
     if (debug) then
       call coupler_dump_field(fields(1), 'src_field.nc')
     endif
 
-    do t=1,100
+    do t=1,1
       fields(1)%field(:, :) = t
       call coupler_put(timestep*t, fields)
     enddo
@@ -41,7 +41,7 @@ implicit none
     call coupler_close()
     call cpu_time(time_finish)
 
-    print*, "Runtime: ", time_finish - time_start
+    print*, "Atm runtime: ", time_finish - time_start
 
     deallocate(fields)
 

@@ -87,10 +87,12 @@ def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, src=None,
 
     weights = os.path.join(output_dir, 'ATM_MOM_conserve.nc')
 
+    t0 = time.time()
     args = [core2_or_jra, 'MOM', '--src_grid', atm_hgrid,
             '--dest_grid', mom_hgrid, '--dest_mask', mom_mask,
             '--method', method, '--output', weights]
     ret = sp.call(cmd + args)
+    t1 = time.time()
     assert ret == 0
     assert os.path.exists(weights)
 
@@ -103,7 +105,7 @@ def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, src=None,
             src[i, :] = i
 
     dest = remap(src, weights, (mom.num_lat_points, mom.num_lon_points))
-    return src, dest, weights
+    return src, dest, weights, t1 - t0
 
 
 def create_weights_mom_to_jra55(mom_hgrid, mom_mask, input_dir, output_dir):
@@ -112,6 +114,7 @@ def create_weights_mom_to_jra55(mom_hgrid, mom_mask, input_dir, output_dir):
     cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
 
     jra55_hgrid = os.path.join(input_dir, 't_10.1984.30Jun2016.nc')
+    jra55_runoffgrid = os.path.join(input_dir, 'RYF.runoff_all.1984_1985.nc')
 
     jra55_to_cice = os.path.join(output_dir, 'rmp_jrat_to_cict_CONSERV.nc')
     args = ['JRA55', 'MOM', '--src_grid', jra55_hgrid,
@@ -121,6 +124,17 @@ def create_weights_mom_to_jra55(mom_hgrid, mom_mask, input_dir, output_dir):
     ret = sp.call(cmd + args)
     assert ret == 0
     assert os.path.exists(jra55_to_cice)
+
+    # This is the JRA55 runoff grid, which is a different resolution to the
+    # other fields.
+    jra55_runoff_to_cice = os.path.join(output_dir, 'rmp_jrar_to_cict_CONSERV.nc')
+    args = ['JRA55', 'MOM', '--src_grid', jra55_runoffgrid,
+            '--dest_grid', mom_hgrid,
+            '--method', 'conserve', '--output', jra55_runoff_to_cice,
+            '--output_convention', 'SCRIP']
+    ret = sp.call(cmd + args)
+    assert ret == 0
+    assert os.path.exists(jra55_runoff_to_cice)
 
     jra55_to_cice_dist = os.path.join(output_dir, 'rmp_jrat_to_cict_DISTWGT.nc')
     args = ['JRA55', 'MOM', '--src_grid', jra55_hgrid,
@@ -350,11 +364,12 @@ class TestRemap():
     @pytest.mark.jra55_tenth
     def test_accessom_tenth_mom_jra55_weights(self, input_dir, output_dir):
         """
-        Create all weights needed for ACCESS-OM tenth. OASIS calls these:
+        Create all weights needed for ACCESS-OM tenth.
 
-        rmp_cict_to_jrat_CONSERV_FRACNNEI.nc,
-        rmp_jrat_to_cict_CONSERV_FRACNNEI.nc,
+        rmp_cict_to_jrat_CONSERV.nc,
+        rmp_jrat_to_cict_CONSERV.nc,
         rmp_jrat_to_cict_DISTWGT.nc
+        rmp_jrar_to_cict_CONSERV.nc
         """
 
         mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
@@ -365,13 +380,14 @@ class TestRemap():
     @pytest.mark.accessom
     @pytest.mark.big_ram
     @pytest.mark.jra55_quarter
-    def test_accessom_qarter_mom_jra55_weights(self, input_dir, output_dir):
+    def test_accessom_quarter_mom_jra55_weights(self, input_dir, output_dir):
         """
         Create all weights needed for ACCESS-OM tenth. OASIS calls these:
 
         rmp_cict_to_jrat_CONSERV_FRACNNEI.nc,
         rmp_jrat_to_cict_CONSERV_FRACNNEI.nc,
         rmp_jrat_to_cict_DISTWGT.nc
+        rmp_jrar_to_cict_CONSERV.nc
         """
 
         mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
@@ -389,6 +405,7 @@ class TestRemap():
         rmp_cict_to_jrat_CONSERV_FRACNNEI.nc,
         rmp_jrat_to_cict_CONSERV_FRACNNEI.nc,
         rmp_jrat_to_cict_DISTWGT.nc
+        rmp_jrar_to_cict_CONSERV.nc
         """
 
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
@@ -426,25 +443,42 @@ class TestRemap():
 
     @pytest.mark.big_ram
     @pytest.mark.conservation
-    def test_core2_to_mom_tenth_remapping(self, input_dir, output_dir):
+    def test_jra55_to_mom_tenth_remapping(self, input_dir, output_dir):
         """
-        Do a test remapping between core2 and MOM 0.1 grid. 
+        Do a test remapping between jra55 and MOM 0.1 grid. 
         """
 
         mom_hgrid = os.path.join(input_dir, 'ocean_01_hgrid.nc')
         mom_mask = os.path.join(input_dir, 'ocean_01_mask.nc')
 
-        t0 = time.time()
-        src, dest, weights = remap_atm_to_ocean(input_dir, output_dir,
-                                                 mom_hgrid, mom_mask)
-        t1 = time.time()
+        src, dest, weights, time = remap_atm_to_ocean(input_dir, output_dir,
+                                                      mom_hgrid, mom_mask,
+                                                      core2_or_jra='JRA55')
         rel_err = calc_regridding_err(weights, src, dest)
 
         print('ESMF relative error {}'.format(rel_err))
-        print('ESMF time to make 0.1 degree weights and remap {}'.format(t1-t0))
+        print('ESMF time to make 0.1 degree weights and remap {}'.format(time))
 
         assert rel_err < 1e-13
 
+    @pytest.mark.big_ram
+    @pytest.mark.conservation
+    def test_core_to_mom_quarter_remapping(self, input_dir, output_dir):
+        """
+        Do a test remapping between core and MOM 0.25 grid. 
+        """
+
+        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
+        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
+
+        src, dest, weights, time = remap_atm_to_ocean(input_dir, output_dir,
+                                                      mom_hgrid, mom_mask)
+        rel_err = calc_regridding_err(weights, src, dest)
+
+        print('ESMF relative error {}'.format(rel_err))
+        print('ESMF time to make CORE2 to 0.25 degree weights {}'.format(time))
+
+        assert rel_err < 1e-13
 
     @pytest.mark.conservation
     def test_core2_to_mom_one_remapping(self, input_dir, output_dir):
@@ -452,14 +486,12 @@ class TestRemap():
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mom_mask = os.path.join(input_dir, 'grid_spec.nc')
 
-        t0 = time.time()
-        src, dest, weights = remap_atm_to_ocean(input_dir, output_dir,
-                                                mom_hgrid, mom_mask)
-        t1 = time.time()
+        src, dest, weights, time = remap_atm_to_ocean(input_dir, output_dir,
+                                                      mom_hgrid, mom_mask)
         rel_err = calc_regridding_err(weights, src, dest)
 
         print('ESMF relative error {}'.format(rel_err))
-        print('ESMF time to make 1 degree weights and remap {}'.format(t1-t0))
+        print('ESMF time to make CORE2 to 1 degree weights {}'.format(time))
 
         assert rel_err < 1e-15
 
@@ -470,15 +502,13 @@ class TestRemap():
         mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
         mom_mask = os.path.join(input_dir, 'grid_spec.nc')
 
-        t0 = time.time()
-        src, dest, weights = remap_atm_to_ocean(input_dir, output_dir,
-                                                 mom_hgrid, mom_mask,
-                                                 core2_or_jra='JRA55')
-        t1 = time.time()
+        src, dest, weights, time = remap_atm_to_ocean(input_dir, output_dir,
+                                                      mom_hgrid, mom_mask,
+                                                      core2_or_jra='JRA55')
         rel_err = calc_regridding_err(weights, src, dest)
 
         print('ESMF relative error {}'.format(rel_err))
-        print('ESMF time to make 1 degree weights and remap {}'.format(t1-t0))
+        print('ESMF time to make JRA55 to MOM 1 degree weights {}'.format(time))
 
         assert rel_err < 1e-15
 

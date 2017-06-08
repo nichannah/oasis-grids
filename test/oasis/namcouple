@@ -12,7 +12,7 @@
  $END
  $STRINGS
 src_field dest_field 1 1 3 rst.nc EXPORTED
-192 94 1440 1080 atmt icet
+192 94 1440 1080 cort momt
 P  0  P  0
 LOCTRANS MAPPING SCRIPR
 INSTANT

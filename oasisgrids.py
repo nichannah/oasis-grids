@@ -93,5 +93,7 @@ def main():
     coupling_grid.write_areas(args.areas)
     coupling_grid.write_masks(args.masks)
 
+    return 0
+
 if __name__ == "__main__":
     sys.exit(main())
