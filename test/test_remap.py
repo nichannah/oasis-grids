@@ -12,6 +12,7 @@ sys.path.append('./esmgrids')
 from esmgrids.mom_grid import MomGrid
 from esmgrids.core2_grid import Core2Grid
 from esmgrids.jra55_grid import Jra55Grid
+from esmgrids.jra55_river_grid import Jra55RiverGrid
 
 from helpers import setup_test_input_dir, setup_test_output_dir
 from helpers import calc_regridding_err
@@ -82,6 +83,9 @@ def remap_atm_to_ocean(input_dir, output_dir, mom_hgrid, mom_mask, src=None,
     elif core2_or_jra == 'JRA55':
         atm_hgrid = os.path.join(input_dir, 't_10.1984.30Jun2016.nc')
         atm_grid = Jra55Grid(atm_hgrid)
+    elif core2_or_jra == 'JRA55_river':
+        atm_hgrid = os.path.join(input_dir, 'RYF.runoff_all.1984_1985.nc')
+        atm_grid = Jra55RiverGrid(atm_hgrid)
     else:
         assert False
 
@@ -359,6 +363,29 @@ class TestRemap():
         assert ret == 0
         assert os.path.exists(cice_to_nt62)
 
+
+    @pytest.mark.runoff_core
+    def test_core_to_mom_1deg_runoff_weights(self, input_dir, output_dir):
+        """
+        Create weights for remapping runoff from core2 to mom 1 deg.
+        """
+
+        my_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = [os.path.join(my_dir, '../', 'remapweights.py')]
+
+        mom_hgrid = os.path.join(input_dir, 'grid_spec.nc')
+        mom_mask = os.path.join(input_dir, 'grid_spec.nc')
+        core2_hgrid = os.path.join(input_dir, 't_10.0001.nc')
+
+        nt62_to_cice = os.path.join(output_dir, 'rmp_corr_to_cict_CONSERV.nc')
+        args = ['CORE2', 'MOM', '--src_grid', core2_hgrid,
+                '--dest_grid', mom_hgrid,
+                '--method', 'conserve', '--output', nt62_to_cice,
+                '--output_convention', 'SCRIP']
+        ret = sp.call(cmd + args)
+        assert ret == 0
+        assert os.path.exists(nt62_to_cice)
+
     @pytest.mark.accessom
     @pytest.mark.big_ram
     @pytest.mark.jra55_tenth
@@ -542,25 +569,38 @@ class TestRemap():
     @pytest.mark.runoff
     def test_remap_runoff(self, input_dir, output_dir):
         """
-        Remapping runoff and check that it is conservative.
+        Remapping runoff from JRA55 1440x720 to 1deg, 0.25 and 0.1 deg ocean grids.
 
         It will be necessary to use a destination mask. We want to move all
         points from src into unmasked parts of the destination.
+
+        This is very slow and not suitable for regridding a timeseries.
         """
 
-        mom_hgrid = os.path.join(input_dir, 'ocean_hgrid.nc')
-        mom_mask = os.path.join(input_dir, 'ocean_mask.nc')
-
-        filename = os.path.join(input_dir, 'runoff_from_iaf_16MAR2016_jragrid_1984.nc')
+        filename = os.path.join(input_dir, 'RYF.runoff_all.1984_1985.nc')
         with nc.Dataset(filename) as f:
-            runoff = f.variables['runof'][0, :]
+            runoff = f.variables['friver'][0, :]
 
-        src, dest, weights = remap_atm_to_ocean(input_dir, output_dir,
-                                                mom_hgrid, mom_mask,
-                                                src=runoff,
-                                                core2_or_jra='JRA55') 
+        ocn_grids = [('025deg_river', 'ocean_hgrid.nc', 'ocean_mask.nc'),
+                     ('01deg_river', 'ocean_01_hgrid.nc', 'ocean_01_mask.nc'),
+                     ('1deg_river', 'grid_spec.nc', 'grid_spec.nc')]
 
-        rel_err = calc_regridding_err(weights, src, dest)
-        print('ESMF relative error {}'.format(rel_err))
+        for name, hgrid, mask in ocn_grids:
+          mom_hgrid = os.path.join(input_dir, hgrid)
+          mom_mask = os.path.join(input_dir, mask)
+          src, dest, weights = remap_atm_to_ocean(input_dir, output_dir,
+                                                  mom_hgrid, mom_mask,
+                                                  src=runoff,
+                                                  core2_or_jra='JRA55_river')
 
-        assert rel_err < 1e-15
+          rel_err = calc_regridding_err(weights, src, dest)
+          print('ESMF {} relative error {}'.format(name, rel_err))
+          assert rel_err < 1e-15
+
+          # Write out results.
+          with nc.Dataset(os.path.join(output_dir, name + '.nc'), 'w') as fd:
+              fd.createDimension('ny', dest.shape[0])
+              fd.createDimension('nx', dest.shape[1])
+
+              vd = fd.createVariable('friver', 'f8', ('ny','nx'))
+              vd[:] = dest[:]
